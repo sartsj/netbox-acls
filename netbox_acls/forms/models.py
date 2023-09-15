@@ -179,15 +179,15 @@ class AccessListForm(NetBoxModelForm):
           - Check if duplicate entry. (Because of GFK.)
           - Check if Access List has no existing rules before change the Access List's type.
         """
-        cleaned_data = super().clean()
+        #cleaned_data = super().clean()
         error_message = {}
         if self.errors.get("name"):
-            return cleaned_data
-        name = cleaned_data.get("name")
-        acl_type = cleaned_data.get("type")
-        device = cleaned_data.get("device")
-        virtual_chassis = cleaned_data.get("virtual_chassis")
-        virtual_machine = cleaned_data.get("virtual_machine")
+            return self.cleaned_data
+        name = self.cleaned_data.get("name")
+        acl_type = self.cleaned_data.get("type")
+        device = self.cleaned_data.get("device")
+        virtual_chassis = self.cleaned_data.get("virtual_chassis")
+        virtual_machine = self.cleaned_data.get("virtual_machine")
 
         # Check if more than one host type selected.
         if (device and virtual_chassis) or (device and virtual_machine) or (virtual_chassis and virtual_machine):
@@ -235,7 +235,7 @@ class AccessListForm(NetBoxModelForm):
         if error_message:
             raise forms.ValidationError(error_message)
 
-        return cleaned_data
+        return self.cleaned_data
 
     def save(self, *args, **kwargs):
         # Set assigned object
