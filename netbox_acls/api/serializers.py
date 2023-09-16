@@ -185,11 +185,6 @@ class ACLStandardRuleSerializer(NetBoxModelSerializer):
         view_name="plugins-api:netbox_acls-api:aclstandardrule-detail",
     )
     access_list = NestedAccessListSerializer()
-    source_prefix = NestedPrefixSerializer(
-        required=False,
-        allow_null=True,
-        default=None,
-    )
 
     class Meta:
         """
@@ -245,16 +240,6 @@ class ACLExtendedRuleSerializer(NetBoxModelSerializer):
         view_name="plugins-api:netbox_acls-api:aclextendedrule-detail",
     )
     access_list = NestedAccessListSerializer()
-    source_prefix = NestedPrefixSerializer(
-        required=False,
-        allow_null=True,
-        default=None,
-    )
-    destination_prefix = NestedPrefixSerializer(
-        required=False,
-        allow_null=True,
-        default=None,
-    )
 
     class Meta:
         """

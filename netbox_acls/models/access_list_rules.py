@@ -43,13 +43,9 @@ class ACLRule(NetBoxModel):
         choices=ACLRuleActionChoices,
         max_length=30,
     )
-    source_prefix = models.ForeignKey(
+    source_prefix = models.CharField(
+        max_length=100,
         blank=True,
-        null=True,
-        on_delete=models.PROTECT,
-        related_name="+",
-        to="ipam.Prefix",
-        verbose_name="Source Prefix",
     )
 
     clone_fields = ("access_list", "action", "source_prefix")
@@ -62,7 +58,7 @@ class ACLRule(NetBoxModel):
 
     @classmethod
     def get_prerequisite_models(cls):
-        return [apps.get_model("ipam.Prefix"), AccessList]
+        return [AccessList]
 
     class Meta:
         """
@@ -132,13 +128,9 @@ class ACLExtendedRule(ACLRule):
         null=True,
         verbose_name="Soure Ports",
     )
-    destination_prefix = models.ForeignKey(
+    destination_prefix = models.CharField(
+        max_length=100,
         blank=True,
-        null=True,
-        on_delete=models.PROTECT,
-        related_name="+",
-        to="ipam.Prefix",
-        verbose_name="Destination Prefix",
     )
     destination_ports = ArrayField(
         base_field=models.PositiveIntegerField(),
@@ -164,7 +156,7 @@ class ACLExtendedRule(ACLRule):
 
     @classmethod
     def get_prerequisite_models(cls):
-        return [apps.get_model("ipam.Prefix"), AccessList]
+        return [AccessList]
 
     class Meta(ACLRule.Meta):
         """

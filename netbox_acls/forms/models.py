@@ -343,12 +343,12 @@ class ACLInterfaceAssignmentForm(NetBoxModelForm):
           - Check for duplicate entry. (Because of GFK)
           - Check that the interface does not have an existing ACL applied in the direction already.
         """
-        cleaned_data = super().clean()
+        #cleaned_data = super().clean()
         error_message = {}
-        access_list = cleaned_data.get("access_list")
-        direction = cleaned_data.get("direction")
-        interface = cleaned_data.get("interface")
-        vminterface = cleaned_data.get("vminterface")
+        access_list = self.cleaned_data.get("access_list")
+        direction = self.cleaned_data.get("direction")
+        interface = self.cleaned_data.get("interface")
+        vminterface = self.cleaned_data.get("vminterface")
 
         # Check if both interface and vminterface are set.
         if interface and vminterface:
@@ -419,7 +419,7 @@ class ACLInterfaceAssignmentForm(NetBoxModelForm):
 
         if error_message:
             raise forms.ValidationError(error_message)
-        return cleaned_data
+        return self.cleaned_data
 
     def save(self, *args, **kwargs):
         # Set assigned object
@@ -445,12 +445,6 @@ class ACLStandardRuleForm(NetBoxModelForm):
             "<b>*Note:</b> This field will only display Standard ACLs.",
         ),
         label="Access List",
-    )
-    source_prefix = DynamicModelChoiceField(
-        queryset=Prefix.objects.all(),
-        required=False,
-        help_text=help_text_acl_rule_logic,
-        label="Source Prefix",
     )
 
     fieldsets = (
@@ -484,27 +478,27 @@ class ACLStandardRuleForm(NetBoxModelForm):
           - Check if action set to remark, but source_prefix set.
           - Check remark set, but action not set to remark.
         """
-        cleaned_data = super().clean()
+        #cleaned_data = super().clean()
         error_message = {}
 
         # No need to check for unique_together since there is no usage of GFK
 
-        if cleaned_data.get("action") == "remark":
+        if self.cleaned_data.get("action") == "remark":
             # Check if action set to remark, but no remark set.
-            if not cleaned_data.get("remark"):
+            if not self.cleaned_data.get("remark"):
                 error_message["remark"] = [error_message_no_remark]
             # Check if action set to remark, but source_prefix set.
-            if cleaned_data.get("source_prefix"):
+            if self.cleaned_data.get("source_prefix"):
                 error_message["source_prefix"] = [
                     error_message_action_remark_source_prefix_set,
                 ]
         # Check remark set, but action not set to remark.
-        elif cleaned_data.get("remark"):
+        elif self.cleaned_data.get("remark"):
             error_message["remark"] = [error_message_remark_without_action_remark]
 
         if error_message:
             raise forms.ValidationError(error_message)
-        return cleaned_data
+        return self.cleaned_data
 
 
 class ACLExtendedRuleForm(NetBoxModelForm):
@@ -525,18 +519,6 @@ class ACLExtendedRuleForm(NetBoxModelForm):
         label="Access List",
     )
 
-    source_prefix = DynamicModelChoiceField(
-        queryset=Prefix.objects.all(),
-        required=False,
-        help_text=help_text_acl_rule_logic,
-        label="Source Prefix",
-    )
-    destination_prefix = DynamicModelChoiceField(
-        queryset=Prefix.objects.all(),
-        required=False,
-        help_text=help_text_acl_rule_logic,
-        label="Destination Prefix",
-    )
     fieldsets = (
         ("Access List Details", ("access_list", "description", "tags")),
         (
@@ -592,44 +574,44 @@ class ACLExtendedRuleForm(NetBoxModelForm):
           - Check if action set to remark, but protocol set.
           - Check remark set, but action not set to remark.
         """
-        cleaned_data = super().clean()
+        #cleaned_data = super().clean()
         error_message = {}
 
         # No need to check for unique_together since there is no usage of GFK
 
-        if cleaned_data.get("action") == "remark":
+        if self.cleaned_data.get("action") == "remark":
             # Check if action set to remark, but no remark set.
-            if not cleaned_data.get("remark"):
+            if not self.cleaned_data.get("remark"):
                 error_message["remark"] = [error_message_no_remark]
             # Check if action set to remark, but source_prefix set.
-            if cleaned_data.get("source_prefix"):
+            if self.cleaned_data.get("source_prefix"):
                 error_message["source_prefix"] = [
                     error_message_action_remark_source_prefix_set,
                 ]
             # Check if action set to remark, but source_ports set.
-            if cleaned_data.get("source_ports"):
+            if self.cleaned_data.get("source_ports"):
                 error_message["source_ports"] = [
                     "Action is set to remark, Source Ports CANNOT be set.",
                 ]
             # Check if action set to remark, but destination_prefix set.
-            if cleaned_data.get("destination_prefix"):
+            if self.cleaned_data.get("destination_prefix"):
                 error_message["destination_prefix"] = [
                     "Action is set to remark, Destination Prefix CANNOT be set.",
                 ]
             # Check if action set to remark, but destination_ports set.
-            if cleaned_data.get("destination_ports"):
+            if self.cleaned_data.get("destination_ports"):
                 error_message["destination_ports"] = [
                     "Action is set to remark, Destination Ports CANNOT be set.",
                 ]
             # Check if action set to remark, but protocol set.
-            if cleaned_data.get("protocol"):
+            if self.cleaned_data.get("protocol"):
                 error_message["protocol"] = [
                     "Action is set to remark, Protocol CANNOT be set.",
                 ]
         # Check if action not set to remark, but remark set.
-        elif cleaned_data.get("remark"):
+        elif self.cleaned_data.get("remark"):
             error_message["remark"] = [error_message_remark_without_action_remark]
 
         if error_message:
             raise forms.ValidationError(error_message)
-        return cleaned_data
+        return self.cleaned_data

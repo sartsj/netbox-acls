@@ -219,7 +219,7 @@ class ACLExtendedRuleFilterForm(NetBoxModelFilterSetForm):
         required=False,
         label="Source Prefix",
     )
-    desintation_prefix = DynamicModelMultipleChoiceField(
+    destination_prefix = DynamicModelMultipleChoiceField(
         queryset=Prefix.objects.all(),
         required=False,
         label="Destination Prefix",
@@ -237,7 +237,7 @@ class ACLExtendedRuleFilterForm(NetBoxModelFilterSetForm):
                 "access_list",
                 "action",
                 "source_prefix",
-                "desintation_prefix",
+                "destination_prefix",
                 "protocol",
             ),
         ),
