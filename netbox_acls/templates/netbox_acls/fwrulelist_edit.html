@@ -1,0 +1,44 @@
+{% extends 'generic/object_edit.html' %}
+{% load static %}
+{% load form_helpers %}
+
+{% block title %}{% if obj.pk %}Editing {{ obj }}{% else %}Add a Firewall Rule List{% endif %}{% endblock %}
+
+{% block form %}
+{% render_errors form %}
+<div class="field-group">
+  <h4>Access List Details</h4>
+  {% render_field form.name %}
+  {% render_field form.tags %}
+</div>
+<div class="field-group">
+    <h4>Role Assignment</h4>
+    <ul class="nav nav-pills" role="tablist">
+        <li class="nav-item" role="presentation">
+            <button
+                role="tab"
+                type="button"
+                id="device_role_tab"
+                data-bs-toggle="tab"
+                class="nav-link active"
+                data-bs-target="#device_role"
+                aria-controls="device_role"
+            >
+                Device Role
+            </button>
+        </li>
+    </ul>
+</div>
+<div class="field-group">
+    <h4>Comments</h4>
+    {% render_field form.comments %}
+</div>
+{% if form.custom_fields %}
+    <div class="card">
+        <h5 class="card-header">Custom Fields</h5>
+        <div class="card-body">
+            {% render_custom_fields form %}
+        </div>
+    </div>
+{% endif %}
+{% endblock %}

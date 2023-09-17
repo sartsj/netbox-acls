@@ -4,6 +4,7 @@ while Django itself handles the database abstraction.
 """
 
 from django.contrib.contenttypes.models import ContentType
+from django.db.models import Q
 from drf_spectacular.utils import extend_schema_field
 from ipam.api.serializers import NestedPrefixSerializer
 from netbox.api.fields import ContentTypeField
@@ -18,14 +19,22 @@ from ..models import (
     ACLExtendedRule,
     ACLInterfaceAssignment,
     ACLStandardRule,
+    FirewallRuleList,
+    FWEgressRule,
+    FWIngressRule,
+    FWInterfaceAssignment,
 )
-from .nested_serializers import NestedAccessListSerializer
+from .nested_serializers import NestedAccessListSerializer, NestedFirewallRuleListSerializer
 
 __all__ = [
     "AccessListSerializer",
     "ACLInterfaceAssignmentSerializer",
     "ACLStandardRuleSerializer",
     "ACLExtendedRuleSerializer",
+    "FirewallRuleListSerializer",
+    "FWEgressRuleSerializer",
+    "FWIngressRuleSerializer",
+    "FWInterfaceAssignmentSerializer",
 ]
 
 # Sets a standard error message for ACL rules with an action of remark, but no remark set.
@@ -308,6 +317,211 @@ class ACLExtendedRuleSerializer(NetBoxModelSerializer):
             error_message["protocol"] = [
                 "Action is set to remark, Protocol CANNOT be set.",
             ]
+
+        if error_message:
+            raise serializers.ValidationError(error_message)
+
+        return super().validate(data)
+
+
+class FirewallRuleListSerializer(NetBoxModelSerializer):
+    """
+    Defines the serializer for the django FirewallRuleList model & associates it to a view.
+    """
+
+    url = serializers.HyperlinkedIdentityField(
+        view_name="plugins-api:netbox_acls-api:fwrulelist-detail",
+    )
+    rule_count = serializers.IntegerField(read_only=True)
+    assigned_object_type = ContentTypeField(
+        queryset=ContentType.objects.filter(Q(app_label="dcim", model="device_role")),
+    )
+    assigned_object = serializers.SerializerMethodField(read_only=True)
+
+    class Meta:
+        """
+        Associates the django model FWRuleList & fields to the serializer.
+        """
+
+        model = FirewallRuleList
+        fields = (
+            "id",
+            "url",
+            "display",
+            "name",
+            "assigned_object_type",
+            "assigned_object_id",
+            "assigned_object",
+            "comments",
+            "tags",
+            "custom_fields",
+            "created",
+            "last_updated",
+            "rule_count",
+        )
+
+    @extend_schema_field(serializers.DictField())
+    def get_assigned_object(self, obj):
+        serializer = get_serializer_for_model(
+            obj.assigned_object,
+            prefix=NESTED_SERIALIZER_PREFIX,
+        )
+        context = {"request": self.context["request"]}
+        return serializer(obj.assigned_object, context=context).data
+
+    def validate(self, data):
+        """
+        Validates api inputs before processing:
+          - Check that the GFK object is valid.
+        """
+        error_message = {}
+
+        if error_message:
+            raise serializers.ValidationError(error_message)
+
+        return super().validate(data)
+
+
+class FWInterfaceAssignmentSerializer(NetBoxModelSerializer):
+    """
+    Defines the serializer for the django FWInterfaceAssignment model & associates it to a view.
+    """
+
+    url = serializers.HyperlinkedIdentityField(
+        view_name="plugins-api:netbox_acls-api:fwinterfaceassignment-detail",
+    )
+    fw_rule_list = NestedFirewallRuleListSerializer()
+    assigned_object_type = ContentTypeField(
+        queryset=ContentType.objects.filter(ACL_INTERFACE_ASSIGNMENT_MODELS),
+    )
+    assigned_object = serializers.SerializerMethodField(read_only=True)
+
+    class Meta:
+        """
+        Associates the django model FWInterfaceAssignment & fields to the serializer.
+        """
+
+        model = FWInterfaceAssignment
+        fields = (
+            "id",
+            "url",
+            "fw_rule_list",
+            "assigned_object_type",
+            "assigned_object_id",
+            "assigned_object",
+            "comments",
+            "tags",
+            "custom_fields",
+            "created",
+            "last_updated",
+        )
+
+    @extend_schema_field(serializers.DictField())
+    def get_assigned_object(self, obj):
+        serializer = get_serializer_for_model(
+            obj.assigned_object,
+            prefix=NESTED_SERIALIZER_PREFIX,
+        )
+        context = {"request": self.context["request"]}
+        return serializer(obj.assigned_object, context=context).data
+
+    def validate(self, data):
+        """
+        Validate the AccessList django model's inputs before allowing it to update the instance.
+          - Check that the GFK object is valid.
+        """
+        error_message = {}
+
+        if error_message:
+            raise serializers.ValidationError(error_message)
+
+        return super().validate(data)
+
+
+class FWIngressRuleSerializer(NetBoxModelSerializer):
+    """
+    Defines the serializer for the django FWIngressRule model & associates it to a view.
+    """
+
+    url = serializers.HyperlinkedIdentityField(
+        view_name="plugins-api:netbox_acls-api:fwingressrule-detail",
+    )
+    fw_rule_list = NestedFirewallRuleListSerializer()
+
+    class Meta:
+        """
+        Associates the django model FWIngressRule & fields to the serializer.
+        """
+
+        model = FWIngressRule
+        fields = (
+            "id",
+            "url",
+            "display",
+            "fw_rule_list",
+            "index",
+            "tags",
+            "description",
+            "created",
+            "custom_fields",
+            "last_updated",
+            "source_prefix",
+            "destination_ports",
+            "protocol",
+        )
+
+    def validate(self, data):
+        """
+        Validate the ACLStandardRule django model's inputs before allowing it to update the instance:
+
+        """
+        error_message = {}
+
+        if error_message:
+            raise serializers.ValidationError(error_message)
+
+        return super().validate(data)
+
+
+class FWEgressRuleSerializer(NetBoxModelSerializer):
+    """
+    Defines the serializer for the django FWEgressRule model & associates it to a view.
+    """
+
+    url = serializers.HyperlinkedIdentityField(
+        view_name="plugins-api:netbox_acls-api:fwegressrule-detail",
+    )
+    fw_rule_list = NestedFirewallRuleListSerializer()
+
+    class Meta:
+        """
+        Associates the django model FWEgressRule & fields to the serializer.
+        """
+
+        model = FWEgressRule
+        fields = (
+            "id",
+            "url",
+            "display",
+            "access_list",
+            "index",
+            "action",
+            "tags",
+            "description",
+            "created",
+            "custom_fields",
+            "last_updated",
+            "destination_prefix",
+            "destination_ports",
+            "protocol",
+        )
+
+    def validate(self, data):
+        """
+        Validate the FWEgressRule django model's inputs before allowing it to update the instance:
+
+        """
+        error_message = {}
 
         if error_message:
             raise serializers.ValidationError(error_message)

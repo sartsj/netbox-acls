@@ -18,5 +18,14 @@ class Query(ObjectType):
     acl_standard_rule = ObjectField(ACLStandardRuleType)
     acl_standard_rule_list = ObjectListField(ACLStandardRuleType)
 
+    fw_rule_list = ObjectField(FirewallRuleListType)
+    fw_rule_list_list = ObjectListField(FirewallRuleListType)
+
+    fw_ingress_rule = ObjectField(FWIngressRuleType)
+    fw_ingress_rule_list = ObjectListField(FWIngressRuleType)
+
+    fw_egress_rule_rule = ObjectField(FWEgressRuleType)
+    fw_egress_rule_list = ObjectListField(FWEgressRuleType)
+
 
 schema = Query

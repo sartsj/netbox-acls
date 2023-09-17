@@ -2,7 +2,7 @@
 Defines each django model's GUI filter/search options.
 """
 
-from dcim.models import Device, Interface, Region, Site, SiteGroup, VirtualChassis
+from dcim.models import Device, Interface, Region, Site, SiteGroup, VirtualChassis, DeviceRole
 from django import forms
 from ipam.models import Prefix
 from netbox.forms import NetBoxModelFilterSetForm
@@ -26,6 +26,10 @@ from ..models import (
     ACLExtendedRule,
     ACLInterfaceAssignment,
     ACLStandardRule,
+    FirewallRuleList,
+    FWInterfaceAssignment,
+    FWIngressRule,
+    FWEgressRule,
 )
 
 __all__ = (
@@ -33,6 +37,10 @@ __all__ = (
     "ACLInterfaceAssignmentFilterForm",
     "ACLStandardRuleFilterForm",
     "ACLExtendedRuleFilterForm",
+    "FirewallRuleListFilterForm",
+    "FWInterfaceAssignmentFilterForm",
+    "FWIngressRuleFilterForm",
+    "FWEgressRuleFilterForm",
 )
 
 
@@ -238,6 +246,151 @@ class ACLExtendedRuleFilterForm(NetBoxModelFilterSetForm):
                 "action",
                 "source_prefix",
                 "destination_prefix",
+                "protocol",
+            ),
+        ),
+    )
+
+
+class FirewallRuleListFilterForm(NetBoxModelFilterSetForm):
+    """
+    GUI filter form to search the django FirewallRuleList model.
+    """
+
+    model = FirewallRuleList
+
+    device_role = DynamicModelChoiceField(
+        queryset=DeviceRole.objects.all(),
+        required=False,
+    )
+
+    tag = TagFilterField(model)
+
+    # fieldsets = (
+    #     (None, ("q", "tag")),
+    #     (
+    #         "Host Details",
+    #         (
+    #             "region",
+    #             "site_group",
+    #             "site",
+    #             "device",
+    #             "virtual_chassis",
+    #             "virtual_machine",
+    #         ),
+    #     ),
+    #     ("ACL Details", ("type", "default_action")),
+    # )
+
+
+class FWInterfaceAssignmentFilterForm(NetBoxModelFilterSetForm):
+    """
+    GUI filter form to search the django AccessList model.
+    """
+
+    model = FWInterfaceAssignment
+    device_role = DynamicModelChoiceField(
+        queryset=DeviceRole.objects.all(),
+        required=False,
+    )
+    device = DynamicModelChoiceField(
+        queryset=Device.objects.all(),
+        query_params={
+            "region_id": "$region",
+            "group_id": "$site_group",
+            "site_id": "$site",
+        },
+        required=False,
+    )
+    interface = DynamicModelChoiceField(
+        queryset=Interface.objects.all(),
+        required=False,
+        query_params={
+            "device_id": "$device",
+        },
+    )
+    virtual_machine = DynamicModelChoiceField(
+        queryset=VirtualMachine.objects.all(),
+        required=False,
+        label="Virtual Machine",
+    )
+    vminterface = DynamicModelChoiceField(
+        queryset=VMInterface.objects.all(),
+        required=False,
+        query_params={
+            "virtual_machine_id": "$virtual_machine",
+        },
+        label="Interface",
+    )
+    fw_rule_list = DynamicModelChoiceField(
+        queryset=FirewallRuleList.objects.all(),
+        query_params={
+            "assigned_object": "$device",
+        },
+        label="Firewall Rule List",
+    )
+    tag = TagFilterField(model)
+
+    # fieldsets = (
+    #    (None, ('q', 'tag')),
+    #    ('Host Details', ('region', 'site_group', 'site', 'device')),
+    #    ('ACL Details', ('type', 'default_action')),
+    # )
+
+
+class FWIngressRuleFilterForm(NetBoxModelFilterSetForm):
+    """
+    GUI filter form to search the django FWIngressRule model.
+    """
+
+    model = FWIngressRule
+    tag = TagFilterField(model)
+    fw_rule_list = DynamicModelMultipleChoiceField(
+        queryset=FirewallRuleList.objects.all(),
+        required=False,
+    )
+    protocol = forms.ChoiceField(
+        choices=add_blank_choice(ACLProtocolChoices),
+        required=False,
+    )
+    
+    fieldsets = (
+        (None, ("q", "tag")),
+        (
+            "Rule Details",
+            (
+                "fw_rule_list",
+                "protocol",
+            ),
+        ),
+    )
+
+
+class FWEgressRuleFilterForm(NetBoxModelFilterSetForm):
+    """
+    GUI filter form to search the django FWEgressRule model.
+    """
+
+    model = FWEgressRule
+    index = forms.IntegerField(
+        required=False,
+    )
+    tag = TagFilterField(model)
+    fw_rule_list = DynamicModelMultipleChoiceField(
+        queryset=FirewallRuleList.objects.all(),
+        required=False,
+    )
+    protocol = forms.ChoiceField(
+        choices=add_blank_choice(ACLProtocolChoices),
+        required=False,
+    )
+
+    fieldsets = (
+        (None, ("q", "tag")),
+        (
+            "Rule Details",
+            (
+                "fw_rule_list",
                 "protocol",
             ),
         ),

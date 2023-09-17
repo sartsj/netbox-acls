@@ -146,4 +146,143 @@ urlpatterns = (
         "extended-rules/<int:pk>/",
         include(get_model_urls("netbox_acls", "aclextendedrule")),
     ),
+
+    # Firewall Rule Lists
+    path("fwrule-lists/", views.FirewallRuleListListView.as_view(), name="fwrulelist_list"),
+    path(
+        "fwrule-lists/add/",
+        views.FirewallRuleListEditView.as_view(),
+        name="fwrulelist_add",
+    ),
+    # path('fwrule-lists/edit/', views.FirewallRuleListBulkEditView.as_view(), name='fwrulelist_bulk_edit'),
+    path(
+        "fwrule-lists/delete/",
+        views.FirewallRuleListBulkDeleteView.as_view(),
+        name="fwrulelist_bulk_delete",
+    ),
+    path("fwrule-lists/<int:pk>/", views.FirewallRuleListView.as_view(), name="fwrulelist"),
+    path(
+        "fwrule-lists/<int:pk>/edit/",
+        views.FirewallRuleListEditView.as_view(),
+        name="fwrulelist_edit",
+    ),
+    path(
+        "fwrule-lists/<int:pk>/delete/",
+        views.FirewallRuleListDeleteView.as_view(),
+        name="fwrulelist_delete",
+    ),
+    path(
+        "fwrule-lists/<int:pk>/",
+        include(get_model_urls("netbox_acls", "fwrulelist")),
+    ),
+    # FW Rule Interface Assignments
+    path(
+        "fw-interface-assignments/",
+        views.FWInterfaceAssignmentListView.as_view(),
+        name="fwinterfaceassignment_list",
+    ),
+    path(
+        "fw-interface-assignments/add/",
+        views.FWInterfaceAssignmentEditView.as_view(),
+        name="fwinterfaceassignment_add",
+    ),
+    # path(
+    #    "fw-interface-assignments/edit/",
+    #    views.FWInterfaceAssignmentBulkEditView.as_view(),
+    #    name="fwinterfaceassignment_bulk_edit"
+    # ),
+    path(
+        "fw-interface-assignments/delete/",
+        views.FWInterfaceAssignmentBulkDeleteView.as_view(),
+        name="fwinterfaceassignment_bulk_delete",
+    ),
+    path(
+        "fw-interface-assignments/<int:pk>/",
+        views.FWInterfaceAssignmentView.as_view(),
+        name="fwinterfaceassignment",
+    ),
+    path(
+        "fw-interface-assignments/<int:pk>/edit/",
+        views.FWInterfaceAssignmentEditView.as_view(),
+        name="fwinterfaceassignment_edit",
+    ),
+    path(
+        "fw-interface-assignments/<int:pk>/delete/",
+        views.FWInterfaceAssignmentDeleteView.as_view(),
+        name="fwinterfaceassignment_delete",
+    ),
+    path(
+        "fw-interface-assignments/<int:pk>/",
+        include(get_model_urls("netbox_acls", "fwinterfaceassignment")),
+    ),
+    # FW Ingress Rules
+    path(
+        "fw-ingress-rules/",
+        views.FWIngressRuleListView.as_view(),
+        name="fwingressrule_list",
+    ),
+    path(
+        "fw-ingress-rules/add/",
+        views.FWIngressRuleEditView.as_view(),
+        name="fwingressrule_add",
+    ),
+    path(
+        "fw-ingress-rules/delete/",
+        views.FWIngressRuleBulkDeleteView.as_view(),
+        name="fwingressrule_bulk_delete",
+    ),
+    path(
+        "fw-ingress-rules/<int:pk>/",
+        views.FWIngressRuleView.as_view(),
+        name="fwingressrule",
+    ),
+    path(
+        "fw-ingress-rules/<int:pk>/edit/",
+        views.FWIngressRuleEditView.as_view(),
+        name="fwingressrule_edit",
+    ),
+    path(
+        "fw-ingress-rules/<int:pk>/delete/",
+        views.FWIngressRuleDeleteView.as_view(),
+        name="fwingressrule_delete",
+    ),
+    path(
+        "fw-ingress-rules/<int:pk>/",
+        include(get_model_urls("netbox_acls", "fwingressrule")),
+    ),
+    # FW Egress Rules
+    path(
+        "fw-egress-rules/",
+        views.FWEgressRuleListView.as_view(),
+        name="fwegressrule_list",
+    ),
+    path(
+        "fw-egress-rules/add/",
+        views.FWEgressRuleEditView.as_view(),
+        name="fwegressrule_add",
+    ),
+    path(
+        "fw-egress-rules/delete/",
+        views.FWEgressRuleBulkDeleteView.as_view(),
+        name="fwegressrule_bulk_delete",
+    ),
+    path(
+        "fw-egress-rules/<int:pk>/",
+        views.FWEgressRuleView.as_view(),
+        name="fwegressrule",
+    ),
+    path(
+        "fw-egress-rules/<int:pk>/edit/",
+        views.FWEgressRuleEditView.as_view(),
+        name="fwegressrule_edit",
+    ),
+    path(
+        "fw-egress-rules/<int:pk>/delete/",
+        views.FWEgressRuleDeleteView.as_view(),
+        name="fwegressrule_delete",
+    ),
+    path(
+        "fw-egress-rules/<int:pk>/",
+        include(get_model_urls("netbox_acls", "fwegressrule")),
+    ),
 )

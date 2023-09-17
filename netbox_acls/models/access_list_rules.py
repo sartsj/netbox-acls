@@ -2,6 +2,7 @@
 Define the django models for this plugin.
 """
 
+from django.core import validators
 from django.apps import apps
 from django.contrib.postgres.fields import ArrayField
 from django.db import models
@@ -46,6 +47,12 @@ class ACLRule(NetBoxModel):
     source_prefix = models.CharField(
         max_length=100,
         blank=True,
+        null=True,
+        validators=[
+            validators.RegexValidator(
+                "^((25[0-5]|(2[0-4]|1\d|[1-9]|)\d)\.?\b){4}/([0-9]|[1-2][0-9]|3[0-2])$", "Only CIDR format allowed (x.x.x.x/y)"
+            )
+        ],
     )
 
     clone_fields = ("access_list", "action", "source_prefix")
@@ -131,6 +138,12 @@ class ACLExtendedRule(ACLRule):
     destination_prefix = models.CharField(
         max_length=100,
         blank=True,
+        null=True,
+        validators=[
+            validators.RegexValidator(
+                "^((25[0-5]|(2[0-4]|1\d|[1-9]|)\d)\.?\b){4}/([0-9]|[1-2][0-9]|3[0-2])$", "Only CIDR format allowed (x.x.x.x/y)"
+            )
+        ],
     )
     destination_ports = ArrayField(
         base_field=models.PositiveIntegerField(),

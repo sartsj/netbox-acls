@@ -1,0 +1,60 @@
+{% extends 'generic/object.html' %}
+
+{% block content %}
+  <div class="row mb-3">
+    <div class="col col-md-6">
+      <div class="card">
+        <h5 class="card-header">FW Ingress Rule</h5>
+        <div class="card-body">
+          <table class="table table-hover attr-table">
+            <caption>FW Ingress Rule</caption>
+            <tr>
+              <th scope="row">Firewall Rule List</th>
+              <td>
+                <a href="{{ object.fw_rule_list.get_absolute_url }}">{{ object.fw_rule_list }}</a>
+              </td>
+            </tr>
+            <tr>
+              <th scope="row">Description</th>
+              <td>{{ object.description|placeholder }}</td>
+            </tr>
+            <tr>
+              <th scope="row">Index</th>
+              <td>{{ object.index }}</td>
+            </tr>
+          </table>
+        </div>
+      </div>
+      {% include 'inc/panels/custom_fields.html' %}
+      {% include 'inc/panels/tags.html' %}
+    </div>
+    <div class="col col-md-6">
+      <div class="card">
+        <h5 class="card-header">Details</h5>
+        <div class="card-body">
+          <table class="table table-hover attr-table">
+            <caption>Details</caption>
+            <tr>
+              <th scope="row">Protocol</th>
+              <td>{{ object.get_protocol_display|placeholder }}</td>
+            </tr>
+            <tr>
+              <th scope="row">Source Prefix</th>
+              <td>
+                {% if object.source_prefix %}
+                  <a href="{{ object.source_prefix.get_absolute_url }}">{{ object.source_prefix }}</a>
+                {% else %}
+                  {{ ''|placeholder }}
+                {% endif %}
+              </td>
+            </tr>
+            <tr>
+              <th scope="row">Destination Ports</th>
+              <td>{{ object.destination_ports|join:", "|placeholder }}</td>
+            </tr>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+{% endblock content %}

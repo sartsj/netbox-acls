@@ -11,6 +11,10 @@ from ..models import (
     ACLExtendedRule,
     ACLInterfaceAssignment,
     ACLStandardRule,
+    FirewallRuleList,
+    FWEgressRule,
+    FWIngressRule,
+    FWInterfaceAssignment,
 )
 
 __all__ = [
@@ -18,6 +22,10 @@ __all__ = [
     "NestedACLInterfaceAssignmentSerializer",
     "NestedACLStandardRuleSerializer",
     "NestedACLExtendedRuleSerializer",
+    "NestedFirewallRuleListSerializer",
+    "NestedFWEgressRuleSerializer",
+    "NestedFWIngressRuleSerializer",
+    "NestedFWInterfaceAssignmentSerializer",
 ]
 
 
@@ -32,7 +40,7 @@ class NestedAccessListSerializer(WritableNestedSerializer):
 
     class Meta:
         """
-        Associates the django model ACLStandardRule & fields to the nested serializer.
+        Associates the django model AccessList & fields to the nested serializer.
         """
 
         model = AccessList
@@ -90,4 +98,76 @@ class NestedACLExtendedRuleSerializer(WritableNestedSerializer):
         """
 
         model = ACLExtendedRule
+        fields = ("id", "url", "display", "index")
+
+    
+class NestedFirewallRuleListSerializer(WritableNestedSerializer):
+    """
+    Defines the nested serializer for the django FirewallRuleList model & associates it to a view.
+    """
+
+    url = serializers.HyperlinkedIdentityField(
+        view_name="plugins-api:netbox_acls-api:fwrulelist-detail",
+    )
+
+    class Meta:
+        """
+        Associates the django model FirewallRuleList & fields to the nested serializer.
+        """
+
+        model = FirewallRuleList
+        fields = ("id", "url", "display", "name")
+
+
+class NestedFWInterfaceAssignmentSerializer(WritableNestedSerializer):
+    """
+    Defines the nested serializer for the django FWInterfaceAssignment model & associates it to a view.
+    """
+
+    url = serializers.HyperlinkedIdentityField(
+        view_name="plugins-api:netbox_acls-api:fwinterfaceassignment-detail",
+    )
+
+    class Meta:
+        """
+        Associates the django model FWInterfaceAssignment & fields to the nested serializer.
+        """
+
+        model = FWInterfaceAssignment
+        fields = ("id", "url", "display", "fw_rule_list")
+
+
+class NestedFWIngressRuleSerializer(WritableNestedSerializer):
+    """
+    Defines the nested serializer for the django FWIngressRule model & associates it to a view.
+    """
+
+    url = serializers.HyperlinkedIdentityField(
+        view_name="plugins-api:netbox_acls-api:fwingressrule-detail",
+    )
+
+    class Meta:
+        """
+        Associates the django model FWIngressRule & fields to the nested serializer.
+        """
+
+        model = FWIngressRule
+        fields = ("id", "url", "display", "index")
+
+
+class NestedFWEgressRuleSerializer(WritableNestedSerializer):
+    """
+    Defines the nested serializer for the django FWEgressRule model & associates it to a view.
+    """
+
+    url = serializers.HyperlinkedIdentityField(
+        view_name="plugins-api:netbox_acls-api:fwegressrule-detail",
+    )
+
+    class Meta:
+        """
+        Associates the django model FWEgressRule & fields to the nested serializer.
+        """
+
+        model = FWEgressRule
         fields = ("id", "url", "display", "index")

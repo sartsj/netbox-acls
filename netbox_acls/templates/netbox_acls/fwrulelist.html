@@ -1,0 +1,46 @@
+{% extends 'generic/object.html' %}
+{% load render_table from django_tables2 %}
+
+{% block content %}
+    <div class="row mb-3">
+        <div class="col col-md-6">
+            <div class="card">
+                <h5 class="card-header">Firewall Rule List</h5>
+                <div class="card-body">
+                    <table class="table table-hover attr-table">
+                        <caption>Firewall Rule List</caption>
+                        <tr>
+                            <th scope="row">Ingress Rules</th>
+                            <td><a href="{% url 'plugins:netbox_acls:fwingressrule_list' %}?fw_rule_list={{ object.pk }}">{{ object.fwingressrule.count|placeholder }}</a></td>
+                        </tr>
+                        <tr>
+                            <th scope="row">Egress Rules</th>
+                            <td><a href="{% url 'plugins:netbox_acls:fwegressrule_list' %}?fw_rule_list={{ object.pk }}">{{ object.fwegressrule.count|placeholder }}</a></td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+            {% include 'inc/panels/custom_fields.html' %}
+        </div>
+        <div class="col col-md-6">
+            {% include 'inc/panels/tags.html' %}
+            {% include 'inc/panels/comments.html' %}
+        </div>
+    </div>
+    <div class="row">
+        <div class="col col-md-12">
+            <div class="card">
+                <h5 class="card-header">{{ object.get_type_display }} Ingress Rules</h5>
+                <div class="card-body table-responsive">
+                    {% render_table ingress_table %}
+                </div>
+            </div>
+            <div class="card">
+                <h5 class="card-header">{{ object.get_type_display }} Egress Rules</h5>
+                <div class="card-body table-responsive">
+                    {% render_table egress_table %}
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock content %}

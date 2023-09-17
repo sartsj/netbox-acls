@@ -11,6 +11,10 @@ __all__ = (
     "ACLInterfaceAssignmentType",
     "ACLExtendedRuleType",
     "ACLStandardRuleType",
+    "FirewallRuleListType",
+    "FWInterfaceAssignmentType",
+    "FWIngressRuleType",
+    "FWEgressRuleType",
 )
 
 
@@ -72,3 +76,64 @@ class ACLStandardRuleType(NetBoxObjectType):
         model = models.ACLStandardRule
         fields = "__all__"
         filterset_class = filtersets.ACLStandardRuleFilterSet
+
+
+
+class FirewallRuleListType(NetBoxObjectType):
+    """
+    Defines the object type for the django model FirewallRuleList.
+    """
+
+    class Meta:
+        """
+        Associates the filterset, fields, and model for the django model FirewallRuleList.
+        """
+
+        model = models.FirewallRuleList
+        fields = "__all__"
+        filterset_class = filtersets.FirewallRuleListFilterSet
+
+
+class FWInterfaceAssignmentType(NetBoxObjectType):
+    """
+    Defines the object type for the django model FWInterfaceAssignment.
+    """
+
+    class Meta:
+        """
+        Associates the filterset, fields, and model for the django model FWInterfaceAssignment.
+        """
+
+        model = models.FWInterfaceAssignment
+        fields = "__all__"
+        filterset_class = filtersets.FWInterfaceAssignmentFilterSet
+
+
+class FWIngressRuleType(NetBoxObjectType):
+    """
+    Defines the object type for the django model FWIngressRule.
+    """
+
+    class Meta:
+        """
+        Associates the filterset, fields, and model for the django model FWIngressRule.
+        """
+
+        model = models.FWIngressRule
+        fields = "__all__"
+        filterset_class = filtersets.FWIngressRuleFilterSet
+
+
+class FWEgressRuleType(NetBoxObjectType):
+    """
+    Defines the object type for the django model FWEgressRule.
+    """
+
+    class Meta:
+        """
+        Associates the filterset, fields, and model for the django model FWEgressRule.
+        """
+
+        model = models.FWEgressRule
+        fields = "__all__"
+        filterset_class = filtersets.FWEgressRuleFilterSet

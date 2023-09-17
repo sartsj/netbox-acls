@@ -2,7 +2,7 @@
 Defines each django model's GUI form to add or edit objects for each django model.
 """
 
-from dcim.models import Device, Interface, Region, Site, SiteGroup, VirtualChassis
+from dcim.models import Device, Interface, Region, Site, SiteGroup, VirtualChassis, DeviceRole
 from django import forms
 from django.contrib.contenttypes.models import ContentType
 from django.utils.safestring import mark_safe
@@ -23,6 +23,10 @@ from ..models import (
     ACLExtendedRule,
     ACLInterfaceAssignment,
     ACLStandardRule,
+    FirewallRuleList,
+    FWInterfaceAssignment,
+    FWIngressRule,
+    FWEgressRule,
 )
 
 __all__ = (
@@ -30,6 +34,10 @@ __all__ = (
     "ACLInterfaceAssignmentForm",
     "ACLStandardRuleForm",
     "ACLExtendedRuleForm",
+    "FirewallRuleListForm",
+    "FWInterfaceAssignmentForm",
+    "FWIngressRuleForm",
+    "FWEgressRuleForm",
 )
 
 # Sets a standard mark_safe help_text value to be used by the various classes
@@ -611,6 +619,323 @@ class ACLExtendedRuleForm(NetBoxModelForm):
         # Check if action not set to remark, but remark set.
         elif self.cleaned_data.get("remark"):
             error_message["remark"] = [error_message_remark_without_action_remark]
+
+        if error_message:
+            raise forms.ValidationError(error_message)
+        return self.cleaned_data
+
+
+class FirewallRuleListForm(NetBoxModelForm):
+    """
+    GUI form to add or edit an FirewallRuleList.
+    Requires a device, a name, a type, and a default_action.
+    """
+
+    # DeviceRole selector
+    device_role = DynamicModelChoiceField(
+        queryset=DeviceRole.objects.all(),
+        required=False,
+    )
+
+    comments = CommentField()
+
+    class Meta:
+        model = FirewallRuleList
+        fields = (
+            "device_role",
+            "name",
+            "comments",
+            "tags",
+        )
+        help_texts = {
+            "name": "The name uniqueness per device is case insensitive.",
+        }
+
+    def __init__(self, *args, **kwargs):
+        # Initialize helper selectors
+        instance = kwargs.get("instance")
+        initial = kwargs.get("initial", {}).copy()
+        if instance:
+            if isinstance(instance.assigned_object, DeviceRole):
+                initial["device"] = instance.assigned_object
+
+        kwargs["initial"] = initial
+        super().__init__(*args, **kwargs)
+
+    def clean(self):
+        """
+        Validates form inputs before submitting:
+          - Check if more than one host type selected.
+          - Check if no hosts selected.
+          - Check if duplicate entry. (Because of GFK.)
+          - Check if Access List has no existing rules before change the Access List's type.
+        """
+        #cleaned_data = super().clean()
+        error_message = {}
+        if self.errors.get("name"):
+            return self.cleaned_data
+        name = self.cleaned_data.get("name")
+        device_role = self.cleaned_data.get("device_role")
+
+        # Check if no roles selected.
+        if not device_role:
+            raise forms.ValidationError(
+                "Access Lists must be assigned to a device_role.",
+            )
+
+        if error_message:
+            raise forms.ValidationError(error_message)
+
+        return self.cleaned_data
+
+    def save(self, *args, **kwargs):
+        # Set assigned object
+        self.instance.assigned_object = (self.cleaned_data.get("device_role"))
+
+        return super().save(*args, **kwargs)
+
+
+class FWInterfaceAssignmentForm(NetBoxModelForm):
+    """
+    GUI form to add or edit FW Interface assignments
+    Requires an access_list, a name, a type, and a default_action.
+    """
+
+    device = DynamicModelChoiceField(
+        queryset=Device.objects.all(),
+        required=False,
+        # query_params={
+        # Need to pass ACL device to it
+        # },
+    )
+    interface = DynamicModelChoiceField(
+        queryset=Interface.objects.all(),
+        required=False,
+        query_params={
+            "device_id": "$device",
+        },
+    )
+    virtual_machine = DynamicModelChoiceField(
+        queryset=VirtualMachine.objects.all(),
+        required=False,
+        # query_params={
+        # Need to pass ACL device to it
+        # },
+        label="Virtual Machine",
+    )
+    vminterface = DynamicModelChoiceField(
+        queryset=VMInterface.objects.all(),
+        required=False,
+        query_params={
+            "virtual_machine_id": "$virtual_machine",
+        },
+        label="VM Interface",
+    )
+    fw_rule_list = DynamicModelChoiceField(
+        queryset=FirewallRuleList.objects.all(),
+        label="Firewall Rule List",
+        help_text=mark_safe(
+            "<b>*Note:</b> Firewall Rule List must be present on the device already.",
+        ),
+    )
+    comments = CommentField()
+
+    def __init__(self, *args, **kwargs):
+        # Initialize helper selectors
+        instance = kwargs.get("instance")
+        initial = kwargs.get("initial", {}).copy()
+        if instance:
+            if type(instance.assigned_object) is Interface:
+                initial["interface"] = instance.assigned_object
+                initial["device"] = "device"
+            elif type(instance.assigned_object) is VMInterface:
+                initial["vminterface"] = instance.assigned_object
+                initial["virtual_machine"] = "virtual_machine"
+        kwargs["initial"] = initial
+
+        super().__init__(*args, **kwargs)
+
+    class Meta:
+        model = FWInterfaceAssignment
+        fields = (
+            "fw_rule_list",
+            "device",
+            "interface",
+            "virtual_machine",
+            "vminterface",
+            "comments",
+            "tags",
+        )
+        help_texts = {
+            "direction": mark_safe(
+                "<b>*Note:</b> CANNOT assign 2 ACLs to the same interface & direction.",
+            ),
+        }
+
+    def clean(self):
+        """
+        Validates form inputs before submitting:
+          - Check if both interface and vminterface are set.
+          - Check if neither interface nor vminterface are set.
+          - Check that an interface's parent device/virtual_machine is assigned to the Access List.
+          - Check that an interface's parent device/virtual_machine is assigned to the Access List.
+          - Check for duplicate entry. (Because of GFK)
+          - Check that the interface does not have an existing ACL applied in the direction already.
+        """
+        #cleaned_data = super().clean()
+        error_message = {}
+        fw_rule_list = self.cleaned_data.get("fw_rule_list")
+        interface = self.cleaned_data.get("interface")
+        vminterface = self.cleaned_data.get("vminterface")
+
+        # Check if both interface and vminterface are set.
+        if interface and vminterface:
+            error_too_many_interfaces = (
+                "Access Lists must be assigned to one type of interface at a time (VM interface or physical interface)"
+            )
+            error_message |= {
+                "interface": [error_too_many_interfaces],
+                "vminterface": [error_too_many_interfaces],
+            }
+        elif not (interface or vminterface):
+            error_no_interface = "An Access List assignment but specify an Interface or VM Interface."
+            error_message |= {
+                "interface": [error_no_interface],
+                "vminterface": [error_no_interface],
+            }
+        else:
+            if interface:
+                assigned_object = interface
+                assigned_object_type = "interface"
+                host_type = "device"
+                host = Interface.objects.get(pk=assigned_object.pk).device
+                assigned_object_id = Interface.objects.get(pk=assigned_object.pk).pk
+            else:
+                assigned_object = vminterface
+                assigned_object_type = "vminterface"
+                host_type = "virtual_machine"
+                host = VMInterface.objects.get(pk=assigned_object.pk).virtual_machine
+                assigned_object_id = VMInterface.objects.get(pk=assigned_object.pk).pk
+
+            assigned_object_type_id = ContentType.objects.get_for_model(
+                assigned_object,
+            ).pk
+
+            # Check for duplicate entry.
+            if FWInterfaceAssignment.objects.filter(
+                fw_rule_list=fw_rule_list,
+                assigned_object_id=assigned_object_id,
+                assigned_object_type=assigned_object_type_id,
+            ).exists():
+                error_duplicate_entry = "An ACL with this name is already associated to this interface"
+                error_message |= {
+                    "fw_rule_list": [error_duplicate_entry],
+                    assigned_object_type: [error_duplicate_entry],
+                }
+
+        if error_message:
+            raise forms.ValidationError(error_message)
+        return self.cleaned_data
+
+    def save(self, *args, **kwargs):
+        # Set assigned object
+        self.instance.assigned_object = self.cleaned_data.get(
+            "interface",
+        ) or self.cleaned_data.get("vminterface")
+        return super().save(*args, **kwargs)
+
+
+class FWIngressRuleForm(NetBoxModelForm):
+    """
+    GUI form to add or edit FW Ingress Rule.
+
+    """
+
+    fw_rule_list = DynamicModelChoiceField(
+        queryset=FirewallRuleList.objects.all(),
+        label="Firewall Rule List",
+    )
+
+    fieldsets = (
+        ("Firewall Rule List Details", ("fw_rule_list", "description", "tags")),
+        ("Rule Definition", ("index", "source_prefix", "destination_ports", "protocol")),
+    )
+
+    class Meta:
+        model = ACLStandardRule
+        fields = (
+            "fw_rule_list",
+            "index",
+            "source_prefix",
+            "destination_ports"
+            "tags",
+            "description",
+        )
+        # help_texts = {
+        #     "index": help_text_acl_rule_index,
+        #     "action": help_text_acl_action,
+        #     "remark": mark_safe(
+        #         "<b>*Note:</b> CANNOT be set if source prefix OR action is set.",
+        #     ),
+        # }
+
+    def clean(self):
+        """
+        Validates form inputs before submitting:
+
+        """
+        #cleaned_data = super().clean()
+        error_message = {}
+
+        if error_message:
+            raise forms.ValidationError(error_message)
+        return self.cleaned_data
+
+
+class FWEgressRuleForm(NetBoxModelForm):
+    """
+    GUI form to add or edit FW Egress Rule.
+    """
+
+    access_list = DynamicModelChoiceField(
+        queryset=FirewallRuleList.objects.all(),
+        label="Firewall Rule List",
+    )
+
+    fieldsets = (
+        ("Firewall Rule List Details", ("fw_rule_list", "description", "tags")),
+        ("Rule Definition", ("index", "destination_prefix", "destination_ports", "protocol")),
+    )
+
+    class Meta:
+        model = ACLExtendedRule
+        fields = (
+            "fw_rule_list",
+            "index",
+            "destination_prefix",
+            "destination_ports",
+            "protocol",
+            "tags",
+            "description",
+        )
+        # help_texts = {
+        #     "action": help_text_acl_action,
+        #     "destination_ports": help_text_acl_rule_logic,
+        #     "index": help_text_acl_rule_index,
+        #     "protocol": help_text_acl_rule_logic,
+        #     "remark": mark_safe(
+        #         "<b>*Note:</b> CANNOT be set if action is not set to remark.",
+        #     ),
+        #     "source_ports": help_text_acl_rule_logic,
+        # }
+
+    def clean(self):
+        """
+        Validates form inputs before submitting:
+
+        """
+        #cleaned_data = super().clean()
+        error_message = {}
 
         if error_message:
             raise forms.ValidationError(error_message)
