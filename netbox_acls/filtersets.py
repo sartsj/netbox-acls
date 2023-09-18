@@ -3,17 +3,17 @@ Filters enable users to request only a specific subset of objects matching a que
 when filtering the sites list by status or region, for instance.
 """
 import django_filters
-from dcim.models import Device, Interface, VirtualChassis
+from dcim.models import DeviceRole, Interface
 from netbox.filtersets import NetBoxModelFilterSet
-from virtualization.models import VirtualMachine, VMInterface
+from virtualization.models import VMInterface
 
-from .models import AccessList, ACLExtendedRule, ACLInterfaceAssignment, ACLStandardRule
+from .models import AccessList, ACLEgressRule, ACLInterfaceAssignment, ACLIngressRule
 
 __all__ = (
     "AccessListFilterSet",
-    "ACLStandardRuleFilterSet",
+    "ACLIngressRuleFilterSet",
     "ACLInterfaceAssignmentFilterSet",
-    "ACLExtendedRuleFilterSet",
+    "ACLEgressRuleFilterSet",
 )
 
 
@@ -22,38 +22,16 @@ class AccessListFilterSet(NetBoxModelFilterSet):
     Define the filter set for the django model AccessList.
     """
 
-    device = django_filters.ModelMultipleChoiceFilter(
-        field_name="device__name",
-        queryset=Device.objects.all(),
+    device_role = django_filters.ModelMultipleChoiceFilter(
+        field_name="device_role__name",
+        queryset=DeviceRole.objects.all(),
         to_field_name="name",
-        label="Device (name)",
+        label="Device Role (name)",
     )
-    device_id = django_filters.ModelMultipleChoiceFilter(
-        field_name="device",
-        queryset=Device.objects.all(),
-        label="Device (ID)",
-    )
-    virtual_chassis = django_filters.ModelMultipleChoiceFilter(
-        field_name="virtual_chassis__name",
-        queryset=VirtualChassis.objects.all(),
-        to_field_name="name",
-        label="Virtual Chassis (name)",
-    )
-    virtual_chassis_id = django_filters.ModelMultipleChoiceFilter(
-        field_name="virtual_chassis",
-        queryset=VirtualChassis.objects.all(),
-        label="Virtual Chassis (ID)",
-    )
-    virtual_machine = django_filters.ModelMultipleChoiceFilter(
-        field_name="virtual_machine__name",
-        queryset=VirtualMachine.objects.all(),
-        to_field_name="name",
-        label="Virtual Machine (name)",
-    )
-    virtual_machine_id = django_filters.ModelMultipleChoiceFilter(
-        field_name="virtual_machine",
-        queryset=VirtualMachine.objects.all(),
-        label="Virtual machine (ID)",
+    device_role_id = django_filters.ModelMultipleChoiceFilter(
+        field_name="device_role",
+        queryset=DeviceRole.objects.all(),
+        label="Device Role (ID)",
     )
 
     class Meta:
@@ -65,12 +43,8 @@ class AccessListFilterSet(NetBoxModelFilterSet):
         fields = (
             "id",
             "name",
-            "device",
-            "device_id",
-            "virtual_chassis",
-            "virtual_chassis_id",
-            "virtual_machine",
-            "virtual_machine_id",
+            "device_role",
+            "device_role_id",
             "type",
             "default_action",
             "comments",
@@ -120,7 +94,6 @@ class ACLInterfaceAssignmentFilterSet(NetBoxModelFilterSet):
         fields = (
             "id",
             "access_list",
-            "direction",
             "interface",
             "interface_id",
             "vminterface",
@@ -134,18 +107,18 @@ class ACLInterfaceAssignmentFilterSet(NetBoxModelFilterSet):
         return queryset.filter(description__icontains=value)
 
 
-class ACLStandardRuleFilterSet(NetBoxModelFilterSet):
+class ACLIngressRuleFilterSet(NetBoxModelFilterSet):
     """
-    Define the filter set for the django model ACLStandardRule.
+    Define the filter set for the django model ACLIngressRule.
     """
 
     class Meta:
         """
-        Associates the django model ACLStandardRule & fields to the filter set.
+        Associates the django model ACLIngressRule & fields to the filter set.
         """
 
-        model = ACLStandardRule
-        fields = ("id", "access_list", "index", "action")
+        model = ACLIngressRule
+        fields = ("id", "access_list", "index", "action", "source_prefix", "protocol")
 
     def search(self, queryset, name, value):
         """
@@ -154,18 +127,18 @@ class ACLStandardRuleFilterSet(NetBoxModelFilterSet):
         return queryset.filter(description__icontains=value)
 
 
-class ACLExtendedRuleFilterSet(NetBoxModelFilterSet):
+class ACLEgressRuleFilterSet(NetBoxModelFilterSet):
     """
-    Define the filter set for the django model ACLExtendedRule.
+    Define the filter set for the django model ACLEgressRule.
     """
 
     class Meta:
         """
-        Associates the django model ACLExtendedRule & fields to the filter set.
+        Associates the django model ACLEgressRule & fields to the filter set.
         """
 
-        model = ACLExtendedRule
-        fields = ("id", "access_list", "index", "action", "protocol")
+        model = ACLEgressRule
+        fields = ("id", "access_list", "index", "action", "destination_prefix", "protocol")
 
     def search(self, queryset, name, value):
         """

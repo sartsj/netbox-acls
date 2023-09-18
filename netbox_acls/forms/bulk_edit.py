@@ -15,7 +15,7 @@ Draft for a possible BulkEditForm, but may not be worth wile.
 # )
 # from virtualization.models import VirtualMachine
 
-# from ..choices import ACLActionChoices, ACLTypeChoices
+# from ..choices import ACLActionChoices, ACLAssignmentDirectionChoices
 # from ..models import AccessList
 
 
@@ -50,7 +50,7 @@ Draft for a possible BulkEditForm, but may not be worth wile.
 #        required=False,
 #    )
 #    type = ChoiceField(
-#        choices=add_blank_choice(ACLTypeChoices),
+#        choices=add_blank_choice(ACLAssignmentDirectionChoices),
 #        required=False,
 #        widget=StaticSelect(),
 #    )
@@ -85,8 +85,8 @@ Draft for a possible BulkEditForm, but may not be worth wile.
 #        type = cleaned_data.get('type')
 #        if ('name' in self.changed_data or 'device' in self.changed_data) and AccessList.objects.filter(name__iexact=name, device=device).exists():
 #            raise forms.ValidationError('An ACL with this name (case insensitive) is already associated to this device.')
-#        if type == 'extended' and self.cleaned_data['aclstandardrules'].exists():
+#        if type == 'extended' and self.cleaned_data['aclingressrules'].exists():
 #            raise forms.ValidationError('This ACL has Standard ACL rules already associated, CANNOT change ACL type!!')
-#        elif type == 'standard' and self.cleaned_data['aclextendedrules'].exists():
+#        elif type == 'standard' and self.cleaned_data['aclegressrules'].exists():
 #            raise forms.ValidationError('This ACL has Extended ACL rules already associated, CANNOT change ACL type!!')
 #        return cleaned_data

@@ -9,7 +9,6 @@ __all__ = (
     "ACLAssignmentDirectionChoices",
     "ACLProtocolChoices",
     "ACLRuleActionChoices",
-    "ACLTypeChoices",
     "ACLProtocolChoices",
 )
 
@@ -57,20 +56,6 @@ class ACLAssignmentDirectionChoices(ChoiceSet):
     CHOICES = [
         (DIRECTION_INGRESS, "Ingress", "blue"),
         (DIRECTION_EGRESS, "Egress", "purple"),
-    ]
-
-
-class ACLTypeChoices(ChoiceSet):
-    """
-    Defines the choices availble for the Access Lists plugin specific to ACL type.
-    """
-
-    TYPE_STANDARD = "standard"
-    TYPE_EXTENDED = "extended"
-
-    CHOICES = [
-        (TYPE_EXTENDED, "Extended", "purple"),
-        (TYPE_STANDARD, "Standard", "blue"),
     ]
 
 

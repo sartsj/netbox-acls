@@ -19,20 +19,19 @@ from ..choices import (
     ACLAssignmentDirectionChoices,
     ACLProtocolChoices,
     ACLRuleActionChoices,
-    ACLTypeChoices,
 )
 from ..models import (
     AccessList,
-    ACLExtendedRule,
+    ACLEgressRule,
     ACLInterfaceAssignment,
-    ACLStandardRule,
+    ACLIngressRule,
 )
 
 __all__ = (
     "AccessListFilterForm",
     "ACLInterfaceAssignmentFilterForm",
-    "ACLStandardRuleFilterForm",
-    "ACLExtendedRuleFilterForm",
+    "ACLIngressRuleFilterForm",
+    "ACLEgressRuleFilterForm",
 )
 
 
@@ -74,7 +73,7 @@ class AccessListFilterForm(NetBoxModelFilterSetForm):
         required=False,
     )
     type = forms.ChoiceField(
-        choices=add_blank_choice(ACLTypeChoices),
+        choices=add_blank_choice(ACLAssignmentDirectionChoices),
         required=False,
     )
     default_action = forms.ChoiceField(
@@ -157,10 +156,6 @@ class ACLInterfaceAssignmentFilterForm(NetBoxModelFilterSetForm):
         },
         label="Access List",
     )
-    direction = forms.ChoiceField(
-        choices=add_blank_choice(ACLAssignmentDirectionChoices),
-        required=False,
-    )
     tag = TagFilterField(model)
 
     # fieldsets = (
@@ -170,12 +165,12 @@ class ACLInterfaceAssignmentFilterForm(NetBoxModelFilterSetForm):
     # )
 
 
-class ACLStandardRuleFilterForm(NetBoxModelFilterSetForm):
+class ACLIngressRuleFilterForm(NetBoxModelFilterSetForm):
     """
-    GUI filter form to search the django ACLStandardRule model.
+    GUI filter form to search the django ACLIngressRule model.
     """
 
-    model = ACLStandardRule
+    model = ACLIngressRule
     tag = TagFilterField(model)
     access_list = DynamicModelMultipleChoiceField(
         queryset=AccessList.objects.all(),
@@ -196,12 +191,12 @@ class ACLStandardRuleFilterForm(NetBoxModelFilterSetForm):
     )
 
 
-class ACLExtendedRuleFilterForm(NetBoxModelFilterSetForm):
+class ACLEgressRuleFilterForm(NetBoxModelFilterSetForm):
     """
-    GUI filter form to search the django ACLExtendedRule model.
+    GUI filter form to search the django ACLEgressRule model.
     """
 
-    model = ACLExtendedRule
+    model = ACLEgressRule
     index = forms.IntegerField(
         required=False,
     )

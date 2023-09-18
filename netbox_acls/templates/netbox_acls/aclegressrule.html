@@ -4,10 +4,10 @@
   <div class="row mb-3">
     <div class="col col-md-6">
       <div class="card">
-        <h5 class="card-header">ACL Extended Rule</h5>
+        <h5 class="card-header">ACL Egress Rule</h5>
         <div class="card-body">
           <table class="table table-hover attr-table">
-            <caption>ACL Extended Rule</caption>
+            <caption>ACL Egress Rule</caption>
             <tr>
               <th scope="row">Access List</th>
               <td>
@@ -41,20 +41,6 @@
             <tr>
               <th scope="row">Protocol</th>
               <td>{{ object.get_protocol_display|placeholder }}</td>
-            </tr>
-            <tr>
-              <th scope="row">Source Prefix</th>
-              <td>
-                {% if object.source_prefix %}
-                  <a href="{{ object.source_prefix.get_absolute_url }}">{{ object.source_prefix }}</a>
-                {% else %}
-                  {{ ''|placeholder }}
-                {% endif %}
-              </td>
-            </tr>
-            <tr>
-              <th scope="row">Source Ports</th>
-              <td>{{ object.source_ports|join:", "|placeholder }}</td>
             </tr>
             <tr>
               <th scope="row">Destination Prefix</th>

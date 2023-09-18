@@ -15,17 +15,17 @@ from utilities.api import get_serializer_for_model
 from ..constants import ACL_HOST_ASSIGNMENT_MODELS, ACL_INTERFACE_ASSIGNMENT_MODELS
 from ..models import (
     AccessList,
-    ACLExtendedRule,
+    ACLEgressRule,
     ACLInterfaceAssignment,
-    ACLStandardRule,
+    ACLIngressRule,
 )
 from .nested_serializers import NestedAccessListSerializer
 
 __all__ = [
     "AccessListSerializer",
     "ACLInterfaceAssignmentSerializer",
-    "ACLStandardRuleSerializer",
-    "ACLExtendedRuleSerializer",
+    "ACLIngressRuleSerializer",
+    "ACLEgressRuleSerializer",
 ]
 
 # Sets a standard error message for ACL rules with an action of remark, but no remark set.
@@ -129,7 +129,6 @@ class ACLInterfaceAssignmentSerializer(NetBoxModelSerializer):
             "id",
             "url",
             "access_list",
-            "direction",
             "assigned_object_type",
             "assigned_object_id",
             "assigned_object",
@@ -176,22 +175,22 @@ class ACLInterfaceAssignmentSerializer(NetBoxModelSerializer):
         return super().validate(data)
 
 
-class ACLStandardRuleSerializer(NetBoxModelSerializer):
+class ACLIngressRuleSerializer(NetBoxModelSerializer):
     """
-    Defines the serializer for the django ACLStandardRule model & associates it to a view.
+    Defines the serializer for the django ACLIngressRule model & associates it to a view.
     """
 
     url = serializers.HyperlinkedIdentityField(
-        view_name="plugins-api:netbox_acls-api:aclstandardrule-detail",
+        view_name="plugins-api:netbox_acls-api:aclingressrule-detail",
     )
     access_list = NestedAccessListSerializer()
 
     class Meta:
         """
-        Associates the django model ACLStandardRule & fields to the serializer.
+        Associates the django model ACLIngressRule & fields to the serializer.
         """
 
-        model = ACLStandardRule
+        model = ACLIngressRule
         fields = (
             "id",
             "url",
@@ -210,7 +209,7 @@ class ACLStandardRuleSerializer(NetBoxModelSerializer):
 
     def validate(self, data):
         """
-        Validate the ACLStandardRule django model's inputs before allowing it to update the instance:
+        Validate the ACLIngressRule django model's inputs before allowing it to update the instance:
           - Check if action set to remark, but no remark set.
           - Check if action set to remark, but source_prefix set.
         """
@@ -231,22 +230,22 @@ class ACLStandardRuleSerializer(NetBoxModelSerializer):
         return super().validate(data)
 
 
-class ACLExtendedRuleSerializer(NetBoxModelSerializer):
+class ACLEgressRuleSerializer(NetBoxModelSerializer):
     """
-    Defines the serializer for the django ACLExtendedRule model & associates it to a view.
+    Defines the serializer for the django ACLEgressRule model & associates it to a view.
     """
 
     url = serializers.HyperlinkedIdentityField(
-        view_name="plugins-api:netbox_acls-api:aclextendedrule-detail",
+        view_name="plugins-api:netbox_acls-api:aclegressrule-detail",
     )
     access_list = NestedAccessListSerializer()
 
     class Meta:
         """
-        Associates the django model ACLExtendedRule & fields to the serializer.
+        Associates the django model ACLEgressRule & fields to the serializer.
         """
 
-        model = ACLExtendedRule
+        model = ACLEgressRule
         fields = (
             "id",
             "url",
@@ -269,7 +268,7 @@ class ACLExtendedRuleSerializer(NetBoxModelSerializer):
 
     def validate(self, data):
         """
-        Validate the ACLExtendedRule django model's inputs before allowing it to update the instance:
+        Validate the ACLEgressRule django model's inputs before allowing it to update the instance:
           - Check if action set to remark, but no remark set.
           - Check if action set to remark, but source_prefix set.
           - Check if action set to remark, but source_ports set.
