@@ -94,7 +94,7 @@ class FirewallRuleListViewSet(NetBoxModelViewSet):
     queryset = (
         models.FirewallRuleList.objects.prefetch_related("tags")
         .annotate(
-            rule_count=Count("fwingressrules") + Count("fwegressrules"),
+            rule_count=Count("ingressrules") + Count("egressrules"),
         )
         .prefetch_related("tags")
     )

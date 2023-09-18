@@ -481,7 +481,7 @@ class ACLExtendedRuleBulkDeleteView(generic.BulkDeleteView):
 #
 
 
-@register_model_view(models.FirewallRuleList)
+@register_model_view(models.FirewallRuleList, "detail")
 class FirewallRuleListView(generic.ObjectView):
     """
     Defines the view for the FirewallRuleList django model.
@@ -519,7 +519,7 @@ class FirewallRuleListListView(generic.ObjectListView):
     """
 
     queryset = models.FirewallRuleList.objects.annotate(
-        rule_count=Count("fwingressrules") + Count("fwegressrules"),
+        rule_count=Count("ingressrules") + Count("egressrules"),
     ).prefetch_related("tags")
     table = tables.FirewallRuleListTable
     filterset = filtersets.FirewallRuleListFilterSet
@@ -571,7 +571,21 @@ class FirewallRuleListChildView(generic.ObjectChildrenView):
 
     def prep_table_data(self, request, queryset, parent):
         return queryset.annotate(
-            rule_count=Count("fwingressrules") + Count("fwegressrules"),
+            rule_count=Count("ingressrules") + Count("egressrules"),
+        )
+
+@register_model_view(DeviceRole, "fw_rule_lists")
+class DeviceRoleFirewallRuleListView(FirewallRuleListChildView):
+    queryset = DeviceRole.objects.prefetch_related("tags")
+    tab = ViewTab(
+        label="Firewall Rule Lists",
+        badge=lambda obj: models.FirewallRuleList.objects.count(),
+        permission="netbox_acls.view_fwrulelist",
+    )
+
+    def get_children(self, request, parent):
+        return self.child_model.objects.restrict(request.user, "view").filter(
+            devicerole=parent,
         )
 
 

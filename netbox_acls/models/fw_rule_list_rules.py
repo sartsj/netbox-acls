@@ -48,7 +48,7 @@ class FWRule(NetBoxModel):
     clone_fields = ("fw_rule_list", "destination_ports")
 
     def __str__(self):
-        return f"{self.access_list}: Rule {self.index}"
+        return f"{self.fw_rule_list}: Rule {self.index}"
 
     @classmethod
     def get_prerequisite_models(cls):

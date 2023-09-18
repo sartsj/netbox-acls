@@ -628,7 +628,7 @@ class ACLExtendedRuleForm(NetBoxModelForm):
 class FirewallRuleListForm(NetBoxModelForm):
     """
     GUI form to add or edit an FirewallRuleList.
-    Requires a device, a name, a type, and a default_action.
+    Requires a device_role and a name.
     """
 
     # DeviceRole selector
@@ -657,7 +657,7 @@ class FirewallRuleListForm(NetBoxModelForm):
         initial = kwargs.get("initial", {}).copy()
         if instance:
             if isinstance(instance.assigned_object, DeviceRole):
-                initial["device"] = instance.assigned_object
+                initial["devicerole"] = instance.assigned_object
 
         kwargs["initial"] = initial
         super().__init__(*args, **kwargs)
@@ -665,10 +665,7 @@ class FirewallRuleListForm(NetBoxModelForm):
     def clean(self):
         """
         Validates form inputs before submitting:
-          - Check if more than one host type selected.
-          - Check if no hosts selected.
-          - Check if duplicate entry. (Because of GFK.)
-          - Check if Access List has no existing rules before change the Access List's type.
+          - Check if no roles selected.
         """
         #cleaned_data = super().clean()
         error_message = {}
@@ -680,7 +677,7 @@ class FirewallRuleListForm(NetBoxModelForm):
         # Check if no roles selected.
         if not device_role:
             raise forms.ValidationError(
-                "Access Lists must be assigned to a device_role.",
+                "Firewall Rule Lists must be assigned to a device_role.",
             )
 
         if error_message:
@@ -862,12 +859,12 @@ class FWIngressRuleForm(NetBoxModelForm):
     )
 
     class Meta:
-        model = ACLStandardRule
+        model = FWIngressRule
         fields = (
             "fw_rule_list",
             "index",
             "source_prefix",
-            "destination_ports"
+            "destination_ports",
             "tags",
             "description",
         )
@@ -908,7 +905,7 @@ class FWEgressRuleForm(NetBoxModelForm):
     )
 
     class Meta:
-        model = ACLExtendedRule
+        model = FWEgressRule
         fields = (
             "fw_rule_list",
             "index",

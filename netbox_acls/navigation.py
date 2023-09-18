@@ -70,17 +70,7 @@ menu_buttons = (
     ),
 )
 
-if plugin_settings.get("top_level_menu"):
-    menu = PluginMenu(
-        label="Access Lists",
-        groups=(("ACLs", menu_buttons),),
-        icon_class="mdi mdi-lock",
-    )
-else:
-    menu_items = menu_buttons
-
-
-fwmenu_buttons = (
+fw_menu_buttons = (
     PluginMenuItem(
         link="plugins:netbox_acls:fwrulelist_list",
         link_text="Firewall Rule Lists",
@@ -139,11 +129,10 @@ fwmenu_buttons = (
     ),
 )
 
-
 if plugin_settings.get("top_level_menu"):
     menu = PluginMenu(
-        label="Firewall Rule Lists",
-        groups=(("FWLs", fwmenu_buttons),),
+        label="Access Lists",
+        groups=(("ACLs", menu_buttons),("FWLs", fw_menu_buttons),),
         icon_class="mdi mdi-lock",
     )
 else:

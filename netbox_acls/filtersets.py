@@ -183,51 +183,51 @@ class FirewallRuleListFilterSet(NetBoxModelFilterSet):
     Define the filter set for the django model FirewallRuleList.
     """
 
-    device_role = django_filters.ModelMultipleChoiceFilter(
-        field_name="device_role__name",
-        queryset=DeviceRole.objects.all(),
-        to_field_name="name",
-        label="Device Role (Name)",
-    )
-    device_role_id = django_filters.ModelMultipleChoiceFilter(
-        field_name="device_role",
-        queryset=DeviceRole.objects.all(),
-        label="DeviceRole (ID)",
-    )
+    # device_role = django_filters.ModelMultipleChoiceFilter(
+    #     field_name="device_role__name",
+    #     queryset=DeviceRole.objects.all(),
+    #     to_field_name="name",
+    #     label="Device Role (Name)",
+    # )
+    # device_role_id = django_filters.ModelMultipleChoiceFilter(
+    #     field_name="device_role",
+    #     queryset=DeviceRole.objects.all(),
+    #     label="DeviceRole (ID)",
+    # )
 
-    device = django_filters.ModelMultipleChoiceFilter(
-        field_name="device__name",
-        queryset=Device.objects.all(),
-        to_field_name="name",
-        label="Device (name)",
-    )
-    device_id = django_filters.ModelMultipleChoiceFilter(
-        field_name="device",
-        queryset=Device.objects.all(),
-        label="Device (ID)",
-    )
-    virtual_chassis = django_filters.ModelMultipleChoiceFilter(
-        field_name="virtual_chassis__name",
-        queryset=VirtualChassis.objects.all(),
-        to_field_name="name",
-        label="Virtual Chassis (name)",
-    )
-    virtual_chassis_id = django_filters.ModelMultipleChoiceFilter(
-        field_name="virtual_chassis",
-        queryset=VirtualChassis.objects.all(),
-        label="Virtual Chassis (ID)",
-    )
-    virtual_machine = django_filters.ModelMultipleChoiceFilter(
-        field_name="virtual_machine__name",
-        queryset=VirtualMachine.objects.all(),
-        to_field_name="name",
-        label="Virtual Machine (name)",
-    )
-    virtual_machine_id = django_filters.ModelMultipleChoiceFilter(
-        field_name="virtual_machine",
-        queryset=VirtualMachine.objects.all(),
-        label="Virtual machine (ID)",
-    )
+    # device = django_filters.ModelMultipleChoiceFilter(
+    #     field_name="device__name",
+    #     queryset=Device.objects.all(),
+    #     to_field_name="name",
+    #     label="Device (name)",
+    # )
+    # device_id = django_filters.ModelMultipleChoiceFilter(
+    #     field_name="device",
+    #     queryset=Device.objects.all(),
+    #     label="Device (ID)",
+    # )
+    # virtual_chassis = django_filters.ModelMultipleChoiceFilter(
+    #     field_name="virtual_chassis__name",
+    #     queryset=VirtualChassis.objects.all(),
+    #     to_field_name="name",
+    #     label="Virtual Chassis (name)",
+    # )
+    # virtual_chassis_id = django_filters.ModelMultipleChoiceFilter(
+    #     field_name="virtual_chassis",
+    #     queryset=VirtualChassis.objects.all(),
+    #     label="Virtual Chassis (ID)",
+    # )
+    # virtual_machine = django_filters.ModelMultipleChoiceFilter(
+    #     field_name="virtual_machine__name",
+    #     queryset=VirtualMachine.objects.all(),
+    #     to_field_name="name",
+    #     label="Virtual Machine (name)",
+    # )
+    # virtual_machine_id = django_filters.ModelMultipleChoiceFilter(
+    #     field_name="virtual_machine",
+    #     queryset=VirtualMachine.objects.all(),
+    #     label="Virtual machine (ID)",
+    # )
 
     class Meta:
         """
@@ -238,14 +238,14 @@ class FirewallRuleListFilterSet(NetBoxModelFilterSet):
         fields = (
             "id",
             "name",
-            "device_role",
-            "device_role_id",
-            "device",
-            "device_id",
-            "virtual_chassis",
-            "virtual_chassis_id",
-            "virtual_machine",
-            "virtual_machine_id",
+            # "device_role",
+            # "device_role_id",
+            # "device",
+            # "device_id",
+            # "virtual_chassis",
+            # "virtual_chassis_id",
+            # "virtual_machine",
+            # "virtual_machine_id",
             "comments",
         )
 

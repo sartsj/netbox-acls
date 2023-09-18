@@ -7,7 +7,7 @@
 {% block form %}
 {% render_errors form %}
 <div class="field-group">
-  <h4>Access List Details</h4>
+  <h4>Firewall Rule List Details</h4>
   {% render_field form.name %}
   {% render_field form.tags %}
 </div>
@@ -18,16 +18,21 @@
             <button
                 role="tab"
                 type="button"
-                id="device_role_tab"
+                id="devicerole_tab"
                 data-bs-toggle="tab"
                 class="nav-link active"
-                data-bs-target="#device_role"
-                aria-controls="device_role"
+                data-bs-target="#devicerole"
+                aria-controls="devicerole"
             >
                 Device Role
             </button>
         </li>
     </ul>
+    <div class="tab-content">
+        <div class="tab-pane active" id="devicerole">
+            {% render_field form.device_role %}
+        </div>
+    </div>
 </div>
 <div class="field-group">
     <h4>Comments</h4>
