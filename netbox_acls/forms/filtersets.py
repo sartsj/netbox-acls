@@ -231,7 +231,6 @@ class ACLEgressRuleFilterForm(NetBoxModelFilterSetForm):
             (
                 "access_list",
                 "action",
-                "source_prefix",
                 "destination_prefix",
                 "protocol",
             ),

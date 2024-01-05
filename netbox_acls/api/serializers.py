@@ -258,8 +258,6 @@ class ACLEgressRuleSerializer(NetBoxModelSerializer):
             "created",
             "custom_fields",
             "last_updated",
-            "source_prefix",
-            "source_ports",
             "destination_prefix",
             "destination_ports",
             "protocol",
@@ -282,16 +280,7 @@ class ACLEgressRuleSerializer(NetBoxModelSerializer):
         # Check if action set to remark, but no remark set.
         if data.get("action") == "remark" and data.get("remark") is None:
             error_message["remark"] = [error_message_no_remark]
-        # Check if action set to remark, but source_prefix set.
-        if data.get("source_prefix"):
-            error_message["source_prefix"] = [
-                error_message_action_remark_source_prefix_set,
-            ]
-        # Check if action set to remark, but source_ports set.
-        if data.get("source_ports"):
-            error_message["source_ports"] = [
-                "Action is set to remark, Source Ports CANNOT be set.",
-            ]
+
         # Check if action set to remark, but destination_prefix set.
         if data.get("destination_prefix"):
             error_message["destination_prefix"] = [

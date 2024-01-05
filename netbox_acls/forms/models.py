@@ -376,8 +376,6 @@ class ACLEgressRuleForm(NetBoxModelForm):
         """
         Validates form inputs before submitting:
           - Check if action set to remark, but no remark set.
-          - Check if action set to remark, but source_prefix set.
-          - Check if action set to remark, but source_ports set.
           - Check if action set to remark, but destination_prefix set.
           - Check if action set to remark, but destination_ports set.
           - Check if action set to remark, but destination_ports set.
