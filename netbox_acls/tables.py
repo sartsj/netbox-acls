@@ -5,13 +5,13 @@ Define the object lists / table view for each of the plugin models.
 import django_tables2 as tables
 from netbox.tables import ChoiceFieldColumn, NetBoxTable, columns
 
-from .models import AccessList, ACLExtendedRule, ACLInterfaceAssignment, ACLStandardRule
+from .models import AccessList, ACLEgressRule, ACLInterfaceAssignment, ACLIngressRule
 
 __all__ = (
     "AccessListTable",
     "ACLInterfaceAssignmentTable",
-    "ACLStandardRuleTable",
-    "ACLExtendedRuleTable",
+    "ACLIngressRuleTable",
+    "ACLEgressRuleTable",
 )
 
 
@@ -36,7 +36,7 @@ class AccessListTable(NetBoxTable):
     assigned_object = tables.Column(
         linkify=True,
         orderable=False,
-        verbose_name="Assigned Host",
+        verbose_name="Assigned Role",
     )
     name = tables.Column(
         linkify=True,
@@ -45,7 +45,6 @@ class AccessListTable(NetBoxTable):
         linkify=True,
     )
     type = ChoiceFieldColumn()
-    default_action = ChoiceFieldColumn()
     rule_count = tables.Column(
         verbose_name="Rule Count",
     )
@@ -62,9 +61,7 @@ class AccessListTable(NetBoxTable):
             "assigned_object",
             "type",
             "rule_count",
-            "default_action",
             "comments",
-            "actions",
             "tags",
         )
         default_columns = (
@@ -72,7 +69,6 @@ class AccessListTable(NetBoxTable):
             "assigned_object",
             "type",
             "rule_count",
-            "default_action",
             "tags",
         )
 
@@ -89,7 +85,6 @@ class ACLInterfaceAssignmentTable(NetBoxTable):
     access_list = tables.Column(
         linkify=True,
     )
-    direction = ChoiceFieldColumn()
     host = tables.TemplateColumn(
         template_code=COL_HOST_ASSIGNMENT,
     )
@@ -108,7 +103,6 @@ class ACLInterfaceAssignmentTable(NetBoxTable):
             "pk",
             "id",
             "access_list",
-            "direction",
             "host",
             "assigned_object",
             "tags",
@@ -116,99 +110,75 @@ class ACLInterfaceAssignmentTable(NetBoxTable):
         default_columns = (
             "id",
             "access_list",
-            "direction",
             "host",
             "assigned_object",
             "tags",
         )
 
 
-class ACLStandardRuleTable(NetBoxTable):
+class ACLIngressRuleTable(NetBoxTable):
     """
-    Defines the table view for the ACLStandardRule model.
+    Defines the table view for the ACLIngressRule model.
     """
 
     access_list = tables.Column(
         linkify=True,
     )
-    index = tables.Column(
-        linkify=True,
-    )
-    action = ChoiceFieldColumn()
     tags = columns.TagColumn(
-        url_name="plugins:netbox_acls:aclstandardrule_list",
+        url_name="plugins:netbox_acls:aclingressrule_list",
     )
 
     class Meta(NetBoxTable.Meta):
-        model = ACLStandardRule
+        model = ACLIngressRule
         fields = (
             "pk",
             "id",
             "access_list",
-            "index",
-            "action",
-            "actions",
-            "remark",
             "tags",
             "description",
             "source_prefix",
+            "protocol",
         )
         default_columns = (
             "access_list",
-            "index",
-            "action",
-            "actions",
-            "remark",
+            "description",
+            "protocol",
             "source_prefix",
+            "destination_ports",
             "tags",
         )
 
 
-class ACLExtendedRuleTable(NetBoxTable):
+class ACLEgressRuleTable(NetBoxTable):
     """
-    Defines the table view for the ACLExtendedRule model.
+    Defines the table view for the ACLEgressRule model.
     """
 
     access_list = tables.Column(
         linkify=True,
     )
-    index = tables.Column(
-        linkify=True,
-    )
-    action = ChoiceFieldColumn()
     tags = columns.TagColumn(
-        url_name="plugins:netbox_acls:aclextendedrule_list",
+        url_name="plugins:netbox_acls:aclegressrule_list",
     )
     protocol = ChoiceFieldColumn()
 
     class Meta(NetBoxTable.Meta):
-        model = ACLExtendedRule
+        model = ACLEgressRule
         fields = (
             "pk",
             "id",
             "access_list",
-            "index",
-            "action",
-            "actions",
-            "remark",
             "tags",
             "description",
-            "source_prefix",
-            "source_ports",
             "destination_prefix",
             "destination_ports",
             "protocol",
         )
         default_columns = (
             "access_list",
-            "index",
-            "action",
-            "actions",
-            "remark",
-            "tags",
-            "source_prefix",
-            "source_ports",
+            "description",
+            "protocol",
             "destination_prefix",
             "destination_ports",
-            "protocol",
+            "tags",
         )

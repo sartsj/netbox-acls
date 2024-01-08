@@ -12,11 +12,11 @@ class Query(ObjectType):
     access_list = ObjectField(AccessListType)
     access_list_list = ObjectListField(AccessListType)
 
-    acl_extended_rule = ObjectField(ACLExtendedRuleType)
-    acl_extended_rule_list = ObjectListField(ACLExtendedRuleType)
+    acl_egress_rule = ObjectField(ACLEgressRuleType)
+    acl_egress_rule_list = ObjectListField(ACLEgressRuleType)
 
-    acl_standard_rule = ObjectField(ACLStandardRuleType)
-    acl_standard_rule_list = ObjectListField(ACLStandardRuleType)
+    acl_ingress_rule = ObjectField(ACLIngressRuleType)
+    acl_ingress_rule_list = ObjectListField(ACLIngressRuleType)
 
 
 schema = Query

@@ -4,19 +4,15 @@
   <div class="row mb-3">
     <div class="col col-md-6">
       <div class="card">
-        <h5 class="card-header">ACL Standard Rule</h5>
+        <h5 class="card-header">ACL Ingress Rule</h5>
         <div class="card-body">
           <table class="table table-hover attr-table">
-            <caption>ACL Standard Rule</caption>
+            <caption>ACL Ingress Rule</caption>
             <tr>
               <th scope="row">Access List</th>
               <td>
                 <a href="{{ object.access_list.get_absolute_url }}">{{ object.access_list }}</a>
               </td>
-            </tr>
-            <tr>
-              <th scope="row">Index</th>
-              <td>{{ object.index }}</td>
             </tr>
             <tr>
               <th scope="row">Description</th>
@@ -35,10 +31,6 @@
           <table class="table table-hover attr-table">
             <caption>Details</caption>
             <tr>
-              <th scope="row">Remark</th>
-              <td>{{ object.get_remark_display|placeholder }}</td>
-            </tr>
-            <tr>
               <th scope="row">Protocol</th>
               <td>{{ object.get_protocol_display|placeholder }}</td>
             </tr>
@@ -53,8 +45,8 @@
               </td>
             </tr>
             <tr>
-              <th scope="row">Action</th>
-              <td>{% badge object.get_action_display bg_color=object.get_action_color %}</td>
+              <th scope="row">Destination Ports</th>
+              <td>{{ object.destination_ports|join:", "|placeholder }}</td>
             </tr>
           </table>
         </div>

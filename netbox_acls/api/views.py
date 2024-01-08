@@ -10,16 +10,16 @@ from netbox.api.viewsets import NetBoxModelViewSet
 from .. import filtersets, models
 from .serializers import (
     AccessListSerializer,
-    ACLExtendedRuleSerializer,
+    ACLEgressRuleSerializer,
     ACLInterfaceAssignmentSerializer,
-    ACLStandardRuleSerializer,
+    ACLIngressRuleSerializer,
 )
 
 __all__ = [
     "AccessListViewSet",
-    "ACLStandardRuleViewSet",
+    "ACLIngressRuleViewSet",
     "ACLInterfaceAssignmentViewSet",
-    "ACLExtendedRuleViewSet",
+    "ACLEgressRuleViewSet",
 ]
 
 
@@ -31,7 +31,7 @@ class AccessListViewSet(NetBoxModelViewSet):
     queryset = (
         models.AccessList.objects.prefetch_related("tags")
         .annotate(
-            rule_count=Count("aclextendedrules") + Count("aclstandardrules"),
+            rule_count=Count("aclegressrules") + Count("aclingressrules"),
         )
         .prefetch_related("tags")
     )
@@ -52,30 +52,27 @@ class ACLInterfaceAssignmentViewSet(NetBoxModelViewSet):
     filterset_class = filtersets.ACLInterfaceAssignmentFilterSet
 
 
-class ACLStandardRuleViewSet(NetBoxModelViewSet):
+class ACLIngressRuleViewSet(NetBoxModelViewSet):
     """
-    Defines the view set for the django ACLStandardRule model & associates it to a view.
+    Defines the view set for the django ACLIngressRule model & associates it to a view.
     """
 
-    queryset = models.ACLStandardRule.objects.prefetch_related(
+    queryset = models.ACLIngressRule.objects.prefetch_related(
         "access_list",
         "tags",
-        "source_prefix",
     )
-    serializer_class = ACLStandardRuleSerializer
-    filterset_class = filtersets.ACLStandardRuleFilterSet
+    serializer_class = ACLIngressRuleSerializer
+    filterset_class = filtersets.ACLIngressRuleFilterSet
 
 
-class ACLExtendedRuleViewSet(NetBoxModelViewSet):
+class ACLEgressRuleViewSet(NetBoxModelViewSet):
     """
-    Defines the view set for the django ACLExtendedRule model & associates it to a view.
+    Defines the view set for the django ACLEgressRule model & associates it to a view.
     """
 
-    queryset = models.ACLExtendedRule.objects.prefetch_related(
+    queryset = models.ACLEgressRule.objects.prefetch_related(
         "access_list",
         "tags",
-        "source_prefix",
-        "destination_prefix",
     )
-    serializer_class = ACLExtendedRuleSerializer
-    filterset_class = filtersets.ACLExtendedRuleFilterSet
+    serializer_class = ACLEgressRuleSerializer
+    filterset_class = filtersets.ACLEgressRuleFilterSet

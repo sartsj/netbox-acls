@@ -103,10 +103,10 @@ Access List (Type Standard) - Individual View
 ![Access List Type Standard - Individual View](docs/img/access_list_type_standard.png)
 
 Extended Access List Rules - List View
-![Extended Access List Rules - List View](docs/img/acl_extended_rules.png)
+![Extended Access List Rules - List View](docs/img/acl_egress_rules.png)
 
 Standard Access List Rules - List View
-![Standard Access List Rules - List View](docs/img/acl_standard_rules.png)
+![Standard Access List Rules - List View](docs/img/acl_ingress_rules.png)
 
 Access List Interface Assignments- List View
 ![Access List Interface Assignments- List View](docs/img/acl_interface_assignments.png)

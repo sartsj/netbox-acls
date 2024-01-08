@@ -2,7 +2,7 @@
 Define the django models for this plugin.
 """
 
-from dcim.models import Device, Interface, VirtualChassis
+from dcim.models import Device, Interface, VirtualChassis, DeviceRole
 from django.contrib.contenttypes.fields import GenericForeignKey, GenericRelation
 from django.contrib.contenttypes.models import ContentType
 from django.core.validators import RegexValidator
@@ -11,7 +11,7 @@ from django.urls import reverse
 from netbox.models import NetBoxModel
 from virtualization.models import VirtualMachine, VMInterface
 
-from ..choices import ACLActionChoices, ACLAssignmentDirectionChoices, ACLTypeChoices
+from ..choices import ACLAssignmentDirectionChoices
 from ..constants import ACL_HOST_ASSIGNMENT_MODELS, ACL_INTERFACE_ASSIGNMENT_MODELS
 
 __all__ = (
@@ -47,13 +47,7 @@ class AccessList(NetBoxModel):
     )
     type = models.CharField(
         max_length=30,
-        choices=ACLTypeChoices,
-    )
-    default_action = models.CharField(
-        default=ACLActionChoices.ACTION_DENY,
-        max_length=30,
-        choices=ACLActionChoices,
-        verbose_name="Default Action",
+        choices=ACLAssignmentDirectionChoices,
     )
     comments = models.TextField(
         blank=True,
@@ -61,7 +55,6 @@ class AccessList(NetBoxModel):
 
     clone_fields = (
         "type",
-        "default_action",
     )
 
     class Meta:
@@ -80,11 +73,8 @@ class AccessList(NetBoxModel):
         """
         return reverse("plugins:netbox_acls:accesslist", args=[self.pk])
 
-    def get_default_action_color(self):
-        return ACLActionChoices.colors.get(self.default_action)
-
     def get_type_color(self):
-        return ACLTypeChoices.colors.get(self.type)
+        return ACLAssignmentDirectionChoices.colors.get(self.type)
 
 
 class ACLInterfaceAssignment(NetBoxModel):
@@ -100,10 +90,6 @@ class ACLInterfaceAssignment(NetBoxModel):
         to=AccessList,
         verbose_name="Access List",
     )
-    direction = models.CharField(
-        max_length=30,
-        choices=ACLAssignmentDirectionChoices,
-    )
     assigned_object_type = models.ForeignKey(
         to=ContentType,
         limit_choices_to=ACL_INTERFACE_ASSIGNMENT_MODELS,
@@ -118,20 +104,18 @@ class ACLInterfaceAssignment(NetBoxModel):
         blank=True,
     )
 
-    clone_fields = ("access_list", "direction")
+    clone_fields = ("access_list")
 
     class Meta:
         unique_together = [
             "assigned_object_type",
             "assigned_object_id",
             "access_list",
-            "direction",
         ]
         ordering = [
             "assigned_object_type",
             "assigned_object_id",
             "access_list",
-            "direction",
         ]
         verbose_name = "ACL Interface Assignment"
         verbose_name_plural = "ACL Interface Assignments"
@@ -149,9 +133,6 @@ class ACLInterfaceAssignment(NetBoxModel):
     @classmethod
     def get_prerequisite_models(cls):
         return [AccessList]
-
-    def get_direction_color(self):
-        return ACLAssignmentDirectionChoices.colors.get(self.direction)
 
 
 GenericRelation(
@@ -172,19 +153,5 @@ GenericRelation(
     to=AccessList,
     content_type_field="assigned_object_type",
     object_id_field="assigned_object_id",
-    related_query_name="device",
-).contribute_to_class(Device, "accesslists")
-
-GenericRelation(
-    to=AccessList,
-    content_type_field="assigned_object_type",
-    object_id_field="assigned_object_id",
-    related_query_name="virtual_chassis",
-).contribute_to_class(VirtualChassis, "accesslists")
-
-GenericRelation(
-    to=AccessList,
-    content_type_field="assigned_object_type",
-    object_id_field="assigned_object_id",
-    related_query_name="virtual_machine",
-).contribute_to_class(VirtualMachine, "accesslists")
+    related_query_name="device_role",
+).contribute_to_class(DeviceRole, "accesslists")

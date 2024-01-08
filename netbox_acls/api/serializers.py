@@ -15,25 +15,19 @@ from utilities.api import get_serializer_for_model
 from ..constants import ACL_HOST_ASSIGNMENT_MODELS, ACL_INTERFACE_ASSIGNMENT_MODELS
 from ..models import (
     AccessList,
-    ACLExtendedRule,
+    ACLEgressRule,
     ACLInterfaceAssignment,
-    ACLStandardRule,
+    ACLIngressRule,
 )
 from .nested_serializers import NestedAccessListSerializer
 
 __all__ = [
     "AccessListSerializer",
     "ACLInterfaceAssignmentSerializer",
-    "ACLStandardRuleSerializer",
-    "ACLExtendedRuleSerializer",
+    "ACLIngressRuleSerializer",
+    "ACLEgressRuleSerializer",
 ]
 
-# Sets a standard error message for ACL rules with an action of remark, but no remark set.
-error_message_no_remark = "Action is set to remark, you MUST add a remark."
-# Sets a standard error message for ACL rules with an action of remark, but no source_prefix is set.
-error_message_action_remark_source_prefix_set = "Action is set to remark, Source Prefix CANNOT be set."
-# Sets a standard error message for ACL rules with an action not set to remark, but no remark is set.
-error_message_remark_without_action_remark = "CANNOT set remark unless action is set to remark."
 # Sets a standard error message for ACL rules no associated to an ACL of the same type.
 error_message_acl_type = "Provided parent Access List is not of right type."
 
@@ -67,7 +61,6 @@ class AccessListSerializer(NetBoxModelSerializer):
             "assigned_object_id",
             "assigned_object",
             "type",
-            "default_action",
             "comments",
             "tags",
             "custom_fields",
@@ -129,7 +122,6 @@ class ACLInterfaceAssignmentSerializer(NetBoxModelSerializer):
             "id",
             "url",
             "access_list",
-            "direction",
             "assigned_object_type",
             "assigned_object_id",
             "assigned_object",
@@ -176,59 +168,56 @@ class ACLInterfaceAssignmentSerializer(NetBoxModelSerializer):
         return super().validate(data)
 
 
-class ACLStandardRuleSerializer(NetBoxModelSerializer):
+class ACLIngressRuleSerializer(NetBoxModelSerializer):
     """
-    Defines the serializer for the django ACLStandardRule model & associates it to a view.
+    Defines the serializer for the django ACLIngressRule model & associates it to a view.
     """
 
     url = serializers.HyperlinkedIdentityField(
-        view_name="plugins-api:netbox_acls-api:aclstandardrule-detail",
+        view_name="plugins-api:netbox_acls-api:aclingressrule-detail",
     )
     access_list = NestedAccessListSerializer()
-    source_prefix = NestedPrefixSerializer(
-        required=False,
-        allow_null=True,
-        default=None,
-    )
 
     class Meta:
         """
-        Associates the django model ACLStandardRule & fields to the serializer.
+        Associates the django model ACLIngressRule & fields to the serializer.
         """
 
-        model = ACLStandardRule
+        model = ACLIngressRule
         fields = (
             "id",
             "url",
             "display",
             "access_list",
-            "index",
-            "action",
             "tags",
             "description",
-            "remark",
             "created",
             "custom_fields",
             "last_updated",
             "source_prefix",
+            "protocol",
         )
 
     def validate(self, data):
         """
-        Validate the ACLStandardRule django model's inputs before allowing it to update the instance:
-          - Check if action set to remark, but no remark set.
-          - Check if action set to remark, but source_prefix set.
+        Validate the ACLIngressRule django model's inputs before allowing it to update the instance:
+          - Check if protocol set to something other than icmp, but no destination ports set.
+          - Check if protocol set to icmp, but ports are set.
         """
         error_message = {}
 
-        # Check if action set to remark, but no remark set.
-        if data.get("action") == "remark" and data.get("remark") is None:
-            error_message["remark"] = [error_message_no_remark]
-        # Check if action set to remark, but source_prefix set.
-        if data.get("source_prefix"):
-            error_message["source_prefix"] = [
-                error_message_action_remark_source_prefix_set,
-            ]
+        # Check if protocol set to something other than icmp, but no destination ports set.
+        if data.get("protocol") != 'icmp':
+            if not data.get("destination_ports"):
+                error_message["destination_ports"] = [
+                    "Protocol is set to TCP or UDP, Destination Ports MUST be set.",
+                ]
+        # Check if protocol set to icmp, but ports are set.
+        else:
+            if data.get("destination_ports"):
+                error_message["destination_ports"] = [
+                    "Protocol is set to ICMP, Destination Ports CANNOT be set.",
+                ]
 
         if error_message:
             raise serializers.ValidationError(error_message)
@@ -236,93 +225,57 @@ class ACLStandardRuleSerializer(NetBoxModelSerializer):
         return super().validate(data)
 
 
-class ACLExtendedRuleSerializer(NetBoxModelSerializer):
+class ACLEgressRuleSerializer(NetBoxModelSerializer):
     """
-    Defines the serializer for the django ACLExtendedRule model & associates it to a view.
+    Defines the serializer for the django ACLEgressRule model & associates it to a view.
     """
 
     url = serializers.HyperlinkedIdentityField(
-        view_name="plugins-api:netbox_acls-api:aclextendedrule-detail",
+        view_name="plugins-api:netbox_acls-api:aclegressrule-detail",
     )
     access_list = NestedAccessListSerializer()
-    source_prefix = NestedPrefixSerializer(
-        required=False,
-        allow_null=True,
-        default=None,
-    )
-    destination_prefix = NestedPrefixSerializer(
-        required=False,
-        allow_null=True,
-        default=None,
-    )
 
     class Meta:
         """
-        Associates the django model ACLExtendedRule & fields to the serializer.
+        Associates the django model ACLEgressRule & fields to the serializer.
         """
 
-        model = ACLExtendedRule
+        model = ACLEgressRule
         fields = (
             "id",
             "url",
             "display",
             "access_list",
-            "index",
-            "action",
             "tags",
             "description",
             "created",
             "custom_fields",
             "last_updated",
-            "source_prefix",
-            "source_ports",
             "destination_prefix",
             "destination_ports",
             "protocol",
-            "remark",
         )
 
     def validate(self, data):
         """
-        Validate the ACLExtendedRule django model's inputs before allowing it to update the instance:
-          - Check if action set to remark, but no remark set.
-          - Check if action set to remark, but source_prefix set.
-          - Check if action set to remark, but source_ports set.
-          - Check if action set to remark, but destination_prefix set.
-          - Check if action set to remark, but destination_ports set.
-          - Check if action set to remark, but protocol set.
-          - Check if action set to remark, but protocol set.
+        Validate the ACLEgressRule django model's inputs before allowing it to update the instance:
+          - Check if protocol set to something other than icmp, but no destination ports set.
+          - Check if protocol set to icmp, but ports are set.
         """
         error_message = {}
 
-        # Check if action set to remark, but no remark set.
-        if data.get("action") == "remark" and data.get("remark") is None:
-            error_message["remark"] = [error_message_no_remark]
-        # Check if action set to remark, but source_prefix set.
-        if data.get("source_prefix"):
-            error_message["source_prefix"] = [
-                error_message_action_remark_source_prefix_set,
-            ]
-        # Check if action set to remark, but source_ports set.
-        if data.get("source_ports"):
-            error_message["source_ports"] = [
-                "Action is set to remark, Source Ports CANNOT be set.",
-            ]
-        # Check if action set to remark, but destination_prefix set.
-        if data.get("destination_prefix"):
-            error_message["destination_prefix"] = [
-                "Action is set to remark, Destination Prefix CANNOT be set.",
-            ]
-        # Check if action set to remark, but destination_ports set.
-        if data.get("destination_ports"):
-            error_message["destination_ports"] = [
-                "Action is set to remark, Destination Ports CANNOT be set.",
-            ]
-        # Check if action set to remark, but protocol set.
-        if data.get("protocol"):
-            error_message["protocol"] = [
-                "Action is set to remark, Protocol CANNOT be set.",
-            ]
+        # Check if protocol set to something other than icmp, but no destination ports set.
+        if data.get("protocol") != 'icmp':
+            if not data.get("destination_ports"):
+                error_message["destination_ports"] = [
+                    "Protocol is set to TCP or UDP, Destination Ports MUST be set.",
+                ]
+        # Check if protocol set to icmp, but ports are set.
+        else:
+            if data.get("destination_ports"):
+                error_message["destination_ports"] = [
+                    "Protocol is set to ICMP, Destination Ports CANNOT be set.",
+                ]
 
         if error_message:
             raise serializers.ValidationError(error_message)

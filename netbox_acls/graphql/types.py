@@ -9,8 +9,8 @@ from .. import filtersets, models
 __all__ = (
     "AccessListType",
     "ACLInterfaceAssignmentType",
-    "ACLExtendedRuleType",
-    "ACLStandardRuleType",
+    "ACLEgressRuleType",
+    "ACLIngressRuleType",
 )
 
 
@@ -44,31 +44,31 @@ class ACLInterfaceAssignmentType(NetBoxObjectType):
         filterset_class = filtersets.ACLInterfaceAssignmentFilterSet
 
 
-class ACLExtendedRuleType(NetBoxObjectType):
+class ACLEgressRuleType(NetBoxObjectType):
     """
-    Defines the object type for the django model ACLExtendedRule.
-    """
-
-    class Meta:
-        """
-        Associates the filterset, fields, and model for the django model ACLExtendedRule.
-        """
-
-        model = models.ACLExtendedRule
-        fields = "__all__"
-        filterset_class = filtersets.ACLExtendedRuleFilterSet
-
-
-class ACLStandardRuleType(NetBoxObjectType):
-    """
-    Defines the object type for the django model ACLStandardRule.
+    Defines the object type for the django model ACLEgressRule.
     """
 
     class Meta:
         """
-        Associates the filterset, fields, and model for the django model ACLStandardRule.
+        Associates the filterset, fields, and model for the django model ACLEgressRule.
         """
 
-        model = models.ACLStandardRule
+        model = models.ACLEgressRule
         fields = "__all__"
-        filterset_class = filtersets.ACLStandardRuleFilterSet
+        filterset_class = filtersets.ACLEgressRuleFilterSet
+
+
+class ACLIngressRuleType(NetBoxObjectType):
+    """
+    Defines the object type for the django model ACLIngressRule.
+    """
+
+    class Meta:
+        """
+        Associates the filterset, fields, and model for the django model ACLIngressRule.
+        """
+
+        model = models.ACLIngressRule
+        fields = "__all__"
+        filterset_class = filtersets.ACLIngressRuleFilterSet

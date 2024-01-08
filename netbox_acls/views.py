@@ -22,16 +22,18 @@ __all__ = (
     "ACLInterfaceAssignmentEditView",
     "ACLInterfaceAssignmentDeleteView",
     "ACLInterfaceAssignmentBulkDeleteView",
-    "ACLStandardRuleView",
-    "ACLStandardRuleListView",
-    "ACLStandardRuleEditView",
-    "ACLStandardRuleDeleteView",
-    "ACLStandardRuleBulkDeleteView",
-    "ACLExtendedRuleView",
-    "ACLExtendedRuleListView",
-    "ACLExtendedRuleEditView",
-    "ACLExtendedRuleDeleteView",
-    "ACLExtendedRuleBulkDeleteView",
+    "ACLIngressRuleView",
+    "ACLIngressRuleListView",
+    "ACLIngressRuleEditView",
+    "ACLIngressRuleDeleteView",
+    "ACLIngressRuleBulkDeleteView",
+    "ACLIngressBulkImportView",
+    "ACLEgressRuleView",
+    "ACLEgressRuleListView",
+    "ACLEgressRuleEditView",
+    "ACLEgressRuleDeleteView",
+    "ACLEgressRuleBulkDeleteView",
+    "ACLEgressBulkImportView",
 )
 
 
@@ -54,10 +56,10 @@ class AccessListView(generic.ObjectView):
         the required ACL Rule using the previous defined tables in tables.py.
         """
 
-        if instance.type == choices.ACLTypeChoices.TYPE_EXTENDED:
-            table = tables.ACLExtendedRuleTable(instance.aclextendedrules.all())
-        elif instance.type == choices.ACLTypeChoices.TYPE_STANDARD:
-            table = tables.ACLStandardRuleTable(instance.aclstandardrules.all())
+        if instance.type == choices.ACLAssignmentDirectionChoices.DIRECTION_EGRESS:
+            table = tables.ACLEgressRuleTable(instance.aclegressrules.all())
+        elif instance.type == choices.ACLAssignmentDirectionChoices.DIRECTION_INGRESS:
+            table = tables.ACLIngressRuleTable(instance.aclingressrules.all())
         else:
             table = None
 
@@ -77,7 +79,7 @@ class AccessListListView(generic.ObjectListView):
     """
 
     queryset = models.AccessList.objects.annotate(
-        rule_count=Count("aclextendedrules") + Count("aclstandardrules"),
+        rule_count=Count("aclegressrules") + Count("aclingressrules"),
     ).prefetch_related("tags")
     table = tables.AccessListTable
     filterset = filtersets.AccessListFilterSet
@@ -129,7 +131,7 @@ class AccessListChildView(generic.ObjectChildrenView):
 
     def prep_table_data(self, request, queryset, parent):
         return queryset.annotate(
-            rule_count=Count("aclextendedrules") + Count("aclstandardrules"),
+            rule_count=Count("aclegressrules") + Count("aclingressrules"),
         )
 
 
@@ -229,7 +231,6 @@ class ACLInterfaceAssignmentEditView(generic.ObjectEditView):
 
         return {
             "access_list": request.GET.get("access_list") or request.POST.get("access_list"),
-            "direction": request.GET.get("direction") or request.POST.get("direction"),
         }
 
 
@@ -309,50 +310,47 @@ class VirtualMachineInterfaceACLInterfaceAssignmentView(
 
 
 #
-# ACLStandardRule views
+# ACLIngressRule views
 #
 
 
-@register_model_view(models.ACLStandardRule)
-class ACLStandardRuleView(generic.ObjectView):
+@register_model_view(models.ACLIngressRule)
+class ACLIngressRuleView(generic.ObjectView):
     """
-    Defines the view for the ACLStandardRule django model.
+    Defines the view for the ACLIngressRule django model.
     """
 
-    queryset = models.ACLStandardRule.objects.prefetch_related(
+    queryset = models.ACLIngressRule.objects.prefetch_related(
         "access_list",
         "tags",
-        "source_prefix",
     )
 
 
-class ACLStandardRuleListView(generic.ObjectListView):
+class ACLIngressRuleListView(generic.ObjectListView):
     """
-    Defines the list view for the ACLStandardRule django model.
+    Defines the list view for the ACLIngressRule django model.
     """
 
-    queryset = models.ACLStandardRule.objects.prefetch_related(
+    queryset = models.ACLIngressRule.objects.prefetch_related(
         "access_list",
         "tags",
-        "source_prefix",
     )
-    table = tables.ACLStandardRuleTable
-    filterset = filtersets.ACLStandardRuleFilterSet
-    filterset_form = forms.ACLStandardRuleFilterForm
+    table = tables.ACLIngressRuleTable
+    filterset = filtersets.ACLIngressRuleFilterSet
+    filterset_form = forms.ACLIngressRuleFilterForm
 
 
-@register_model_view(models.ACLStandardRule, "edit")
-class ACLStandardRuleEditView(generic.ObjectEditView):
+@register_model_view(models.ACLIngressRule, "edit")
+class ACLIngressRuleEditView(generic.ObjectEditView):
     """
-    Defines the edit view for the ACLStandardRule django model.
+    Defines the edit view for the ACLIngressRule django model.
     """
 
-    queryset = models.ACLStandardRule.objects.prefetch_related(
+    queryset = models.ACLIngressRule.objects.prefetch_related(
         "access_list",
         "tags",
-        "source_prefix",
     )
-    form = forms.ACLStandardRuleForm
+    form = forms.ACLIngressRuleForm
 
     def get_extra_addanother_params(self, request):
         """
@@ -364,77 +362,77 @@ class ACLStandardRuleEditView(generic.ObjectEditView):
         }
 
 
-@register_model_view(models.ACLStandardRule, "delete")
-class ACLStandardRuleDeleteView(generic.ObjectDeleteView):
+@register_model_view(models.ACLIngressRule, "delete")
+class ACLIngressRuleDeleteView(generic.ObjectDeleteView):
     """
-    Defines delete view for the ACLStandardRules django model.
+    Defines delete view for the ACLIngressRules django model.
     """
 
-    queryset = models.ACLStandardRule.objects.prefetch_related(
+    queryset = models.ACLIngressRule.objects.prefetch_related(
         "access_list",
         "tags",
-        "source_prefix",
     )
 
 
-class ACLStandardRuleBulkDeleteView(generic.BulkDeleteView):
-    queryset = models.ACLStandardRule.objects.prefetch_related(
+class ACLIngressRuleBulkDeleteView(generic.BulkDeleteView):
+    queryset = models.ACLIngressRule.objects.prefetch_related(
         "access_list",
         "tags",
-        "source_prefix",
     )
-    filterset = filtersets.ACLStandardRuleFilterSet
-    table = tables.ACLStandardRuleTable
+    filterset = filtersets.ACLIngressRuleFilterSet
+    table = tables.ACLIngressRuleTable
 
+
+class ACLIngressBulkImportView(generic.BulkImportView):
+    queryset = models.ACLIngressRule.objects.prefetch_related(
+        "access_list",
+        "tags",
+    )
+    model_form = forms.ACLIngressRuleImportForm
+    table = tables.ACLIngressRuleTable
 
 #
-# ACLExtendedRule views
+# ACLEgressRule views
 #
 
 
-@register_model_view(models.ACLExtendedRule)
-class ACLExtendedRuleView(generic.ObjectView):
+@register_model_view(models.ACLEgressRule)
+class ACLEgressRuleView(generic.ObjectView):
     """
-    Defines the view for the ACLExtendedRule django model.
+    Defines the view for the ACLEgressRule django model.
     """
 
-    queryset = models.ACLExtendedRule.objects.prefetch_related(
+    queryset = models.ACLEgressRule.objects.prefetch_related(
         "access_list",
         "tags",
-        "source_prefix",
-        "destination_prefix",
     )
 
 
-class ACLExtendedRuleListView(generic.ObjectListView):
+class ACLEgressRuleListView(generic.ObjectListView):
     """
-    Defines the list view for the ACLExtendedRule django model.
+    Defines the list view for the ACLEgressRule django model.
     """
 
-    queryset = models.ACLExtendedRule.objects.prefetch_related(
+    queryset = models.ACLEgressRule.objects.prefetch_related(
         "access_list",
         "tags",
-        "source_prefix",
-        "destination_prefix",
     )
-    table = tables.ACLExtendedRuleTable
-    filterset = filtersets.ACLExtendedRuleFilterSet
-    filterset_form = forms.ACLExtendedRuleFilterForm
+    table = tables.ACLEgressRuleTable
+    filterset = filtersets.ACLEgressRuleFilterSet
+    filterset_form = forms.ACLEgressRuleFilterForm
 
 
-@register_model_view(models.ACLExtendedRule, "edit")
-class ACLExtendedRuleEditView(generic.ObjectEditView):
+@register_model_view(models.ACLEgressRule, "edit")
+class ACLEgressRuleEditView(generic.ObjectEditView):
     """
-    Defines the edit view for the ACLExtendedRule django model.
+    Defines the edit view for the ACLEgressRule django model.
     """
 
-    queryset = models.ACLExtendedRule.objects.prefetch_related(
+    queryset = models.ACLEgressRule.objects.prefetch_related(
         "access_list",
         "tags",
-        "source_prefix",
-        "destination_prefix",
     )
-    form = forms.ACLExtendedRuleForm
+    form = forms.ACLEgressRuleForm
 
     def get_extra_addanother_params(self, request):
         """
@@ -445,27 +443,32 @@ class ACLExtendedRuleEditView(generic.ObjectEditView):
             "access_list": request.GET.get("access_list") or request.POST.get("access_list"),
         }
 
-
-@register_model_view(models.ACLExtendedRule, "delete")
-class ACLExtendedRuleDeleteView(generic.ObjectDeleteView):
-    """
-    Defines delete view for the ACLExtendedRules django model.
-    """
-
-    queryset = models.ACLExtendedRule.objects.prefetch_related(
+class ACLEgressBulkImportView(generic.BulkImportView):
+    queryset = models.ACLEgressRule.objects.prefetch_related(
         "access_list",
         "tags",
-        "source_prefix",
-        "destination_prefix",
+    )
+    model_form = forms.ACLEgressRuleImportForm
+    table = tables.ACLEgressRuleTable
+
+
+@register_model_view(models.ACLEgressRule, "delete")
+class ACLEgressRuleDeleteView(generic.ObjectDeleteView):
+    """
+    Defines delete view for the ACLEgressRules django model.
+    """
+
+    queryset = models.ACLEgressRule.objects.prefetch_related(
+        "access_list",
+        "tags",
     )
 
 
-class ACLExtendedRuleBulkDeleteView(generic.BulkDeleteView):
-    queryset = models.ACLExtendedRule.objects.prefetch_related(
+class ACLEgressRuleBulkDeleteView(generic.BulkDeleteView):
+    queryset = models.ACLEgressRule.objects.prefetch_related(
         "access_list",
         "tags",
-        "source_prefix",
-        "destination_prefix",
     )
-    filterset = filtersets.ACLExtendedRuleFilterSet
-    table = tables.ACLExtendedRuleTable
+    filterset = filtersets.ACLEgressRuleFilterSet
+    table = tables.ACLEgressRuleTable
+

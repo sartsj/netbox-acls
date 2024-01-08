@@ -7,7 +7,6 @@ from django import forms
 from ipam.models import Prefix
 from netbox.forms import NetBoxModelFilterSetForm
 from utilities.forms.fields import (
-    ChoiceField,
     DynamicModelChoiceField,
     DynamicModelMultipleChoiceField,
     TagFilterField,
@@ -16,24 +15,21 @@ from utilities.forms.utils import add_blank_choice
 from virtualization.models import VirtualMachine, VMInterface
 
 from ..choices import (
-    ACLActionChoices,
     ACLAssignmentDirectionChoices,
     ACLProtocolChoices,
-    ACLRuleActionChoices,
-    ACLTypeChoices,
 )
 from ..models import (
     AccessList,
-    ACLExtendedRule,
+    ACLEgressRule,
     ACLInterfaceAssignment,
-    ACLStandardRule,
+    ACLIngressRule,
 )
 
 __all__ = (
     "AccessListFilterForm",
     "ACLInterfaceAssignmentFilterForm",
-    "ACLStandardRuleFilterForm",
-    "ACLExtendedRuleFilterForm",
+    "ACLIngressRuleFilterForm",
+    "ACLEgressRuleFilterForm",
 )
 
 
@@ -74,14 +70,9 @@ class AccessListFilterForm(NetBoxModelFilterSetForm):
         queryset=VirtualChassis.objects.all(),
         required=False,
     )
-    type = ChoiceField(
-        choices=add_blank_choice(ACLTypeChoices),
+    type = forms.ChoiceField(
+        choices=add_blank_choice(ACLAssignmentDirectionChoices),
         required=False,
-    )
-    default_action = ChoiceField(
-        choices=add_blank_choice(ACLActionChoices),
-        required=False,
-        label="Default Action",
     )
     tag = TagFilterField(model)
 
@@ -98,7 +89,7 @@ class AccessListFilterForm(NetBoxModelFilterSetForm):
                 "virtual_machine",
             ),
         ),
-        ("ACL Details", ("type", "default_action")),
+        ("ACL Details", ("type",)),
     )
 
 
@@ -158,25 +149,21 @@ class ACLInterfaceAssignmentFilterForm(NetBoxModelFilterSetForm):
         },
         label="Access List",
     )
-    direction = ChoiceField(
-        choices=add_blank_choice(ACLAssignmentDirectionChoices),
-        required=False,
-    )
     tag = TagFilterField(model)
 
     # fieldsets = (
     #    (None, ('q', 'tag')),
     #    ('Host Details', ('region', 'site_group', 'site', 'device')),
-    #    ('ACL Details', ('type', 'default_action')),
+    #    ('ACL Details', ('type')),
     # )
 
 
-class ACLStandardRuleFilterForm(NetBoxModelFilterSetForm):
+class ACLIngressRuleFilterForm(NetBoxModelFilterSetForm):
     """
-    GUI filter form to search the django ACLStandardRule model.
+    GUI filter form to search the django ACLIngressRule model.
     """
 
-    model = ACLStandardRule
+    model = ACLIngressRule
     tag = TagFilterField(model)
     access_list = DynamicModelMultipleChoiceField(
         queryset=AccessList.objects.all(),
@@ -186,33 +173,22 @@ class ACLStandardRuleFilterForm(NetBoxModelFilterSetForm):
         queryset=Prefix.objects.all(),
         required=False,
         label="Source Prefix",
-    )
-    action = ChoiceField(
-        choices=add_blank_choice(ACLRuleActionChoices),
-        required=False,
     )
     fieldsets = (
         (None, ("q", "tag")),
-        ("Rule Details", ("access_list", "action", "source_prefix")),
+        ("Rule Details", ("access_list", "source_prefix")),
     )
 
 
-class ACLExtendedRuleFilterForm(NetBoxModelFilterSetForm):
+class ACLEgressRuleFilterForm(NetBoxModelFilterSetForm):
     """
-    GUI filter form to search the django ACLExtendedRule model.
+    GUI filter form to search the django ACLEgressRule model.
     """
 
-    model = ACLExtendedRule
-    index = forms.IntegerField(
-        required=False,
-    )
+    model = ACLEgressRule
     tag = TagFilterField(model)
     access_list = DynamicModelMultipleChoiceField(
         queryset=AccessList.objects.all(),
-        required=False,
-    )
-    action = ChoiceField(
-        choices=add_blank_choice(ACLRuleActionChoices),
         required=False,
     )
     source_prefix = DynamicModelMultipleChoiceField(
@@ -220,12 +196,12 @@ class ACLExtendedRuleFilterForm(NetBoxModelFilterSetForm):
         required=False,
         label="Source Prefix",
     )
-    desintation_prefix = DynamicModelMultipleChoiceField(
+    destination_prefix = DynamicModelMultipleChoiceField(
         queryset=Prefix.objects.all(),
         required=False,
         label="Destination Prefix",
     )
-    protocol = ChoiceField(
+    protocol = forms.ChoiceField(
         choices=add_blank_choice(ACLProtocolChoices),
         required=False,
     )
@@ -236,9 +212,7 @@ class ACLExtendedRuleFilterForm(NetBoxModelFilterSetForm):
             "Rule Details",
             (
                 "access_list",
-                "action",
-                "source_prefix",
-                "desintation_prefix",
+                "destination_prefix",
                 "protocol",
             ),
         ),
