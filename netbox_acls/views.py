@@ -27,11 +27,13 @@ __all__ = (
     "ACLIngressRuleEditView",
     "ACLIngressRuleDeleteView",
     "ACLIngressRuleBulkDeleteView",
+    "ACLIngressBulkImportView",
     "ACLEgressRuleView",
     "ACLEgressRuleListView",
     "ACLEgressRuleEditView",
     "ACLEgressRuleDeleteView",
     "ACLEgressRuleBulkDeleteView",
+    "ACLEgressBulkImportView",
 )
 
 
@@ -381,6 +383,14 @@ class ACLIngressRuleBulkDeleteView(generic.BulkDeleteView):
     table = tables.ACLIngressRuleTable
 
 
+class ACLIngressBulkImportView(generic.BulkImportView):
+    queryset = models.ACLIngressRule.objects.prefetch_related(
+        "access_list",
+        "tags",
+    )
+    model_form = forms.ACLIngressRuleImportForm
+    table = tables.ACLIngressRuleTable
+
 #
 # ACLEgressRule views
 #
@@ -433,6 +443,14 @@ class ACLEgressRuleEditView(generic.ObjectEditView):
             "access_list": request.GET.get("access_list") or request.POST.get("access_list"),
         }
 
+class ACLEgressBulkImportView(generic.BulkImportView):
+    queryset = models.ACLEgressRule.objects.prefetch_related(
+        "access_list",
+        "tags",
+    )
+    model_form = forms.ACLEgressRuleImportForm
+    table = tables.ACLEgressRuleTable
+
 
 @register_model_view(models.ACLEgressRule, "delete")
 class ACLEgressRuleDeleteView(generic.ObjectDeleteView):
@@ -453,3 +471,4 @@ class ACLEgressRuleBulkDeleteView(generic.BulkDeleteView):
     )
     filterset = filtersets.ACLEgressRuleFilterSet
     table = tables.ACLEgressRuleTable
+

@@ -76,74 +76,84 @@ urlpatterns = (
         "interface-assignments/<int:pk>/",
         include(get_model_urls("netbox_acls", "aclinterfaceassignment")),
     ),
-    # Standard Access List Rules
+    # Ingress Rules
     path(
-        "standard-rules/",
+        "ingress-rules/",
         views.ACLIngressRuleListView.as_view(),
         name="aclingressrule_list",
     ),
     path(
-        "standard-rules/add/",
+        "ingress-rules/add/",
         views.ACLIngressRuleEditView.as_view(),
         name="aclingressrule_add",
     ),
     path(
-        "standard-rules/delete/",
+        "ingress-rules/import/",
+        views.ACLIngressBulkImportView.as_view(),
+        name="aclingressrule_import",
+    ),
+    path(
+        "ingress-rules/delete/",
         views.ACLIngressRuleBulkDeleteView.as_view(),
         name="aclingressrule_bulk_delete",
     ),
     path(
-        "standard-rules/<int:pk>/",
+        "ingress-rules/<int:pk>/",
         views.ACLIngressRuleView.as_view(),
         name="aclingressrule",
     ),
     path(
-        "standard-rules/<int:pk>/edit/",
+        "ingress-rules/<int:pk>/edit/",
         views.ACLIngressRuleEditView.as_view(),
         name="aclingressrule_edit",
     ),
     path(
-        "standard-rules/<int:pk>/delete/",
+        "ingress-rules/<int:pk>/delete/",
         views.ACLIngressRuleDeleteView.as_view(),
         name="aclingressrule_delete",
     ),
     path(
-        "standard-rules/<int:pk>/",
+        "ingress-rules/<int:pk>/",
         include(get_model_urls("netbox_acls", "aclingressrule")),
     ),
-    # Extended Access List Rules
+    # Egress Rules
     path(
-        "extended-rules/",
+        "egress-rules/",
         views.ACLEgressRuleListView.as_view(),
         name="aclegressrule_list",
     ),
     path(
-        "extended-rules/add/",
+        "egress-rules/add/",
         views.ACLEgressRuleEditView.as_view(),
         name="aclegressrule_add",
     ),
     path(
-        "extended-rules/delete/",
+        "egress-rules/import/",
+        views.ACLEgressBulkImportView.as_view(),
+        name="aclegressrule_import",
+    ),
+    path(
+        "egress-rules/delete/",
         views.ACLEgressRuleBulkDeleteView.as_view(),
         name="aclegressrule_bulk_delete",
     ),
     path(
-        "extended-rules/<int:pk>/",
+        "egress-rules/<int:pk>/",
         views.ACLEgressRuleView.as_view(),
         name="aclegressrule",
     ),
     path(
-        "extended-rules/<int:pk>/edit/",
+        "egress-rules/<int:pk>/edit/",
         views.ACLEgressRuleEditView.as_view(),
         name="aclegressrule_edit",
     ),
     path(
-        "extended-rules/<int:pk>/delete/",
+        "egress-rules/<int:pk>/delete/",
         views.ACLEgressRuleDeleteView.as_view(),
         name="aclegressrule_delete",
     ),
     path(
-        "extended-rules/<int:pk>/",
+        "egress-rules/<int:pk>/",
         include(get_model_urls("netbox_acls", "aclegressrule")),
     ),
 )

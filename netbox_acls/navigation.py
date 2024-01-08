@@ -38,6 +38,13 @@ menu_buttons = (
                 color=ButtonColorChoices.GREEN,
                 permissions=["netbox_acls.add_aclingressrule"],
             ),
+            PluginMenuButton(
+                link="plugins:netbox_acls:aclingressrule_import",
+                title="Import",
+                icon_class="mdi mdi-upload",
+                color=ButtonColorChoices.CYAN,
+                permissions=["netbox_acls.add_aclingressrule"],
+            ),
         ),
     ),
     PluginMenuItem(
@@ -50,6 +57,13 @@ menu_buttons = (
                 title="Add",
                 icon_class="mdi mdi-plus-thick",
                 color=ButtonColorChoices.GREEN,
+                permissions=["netbox_acls.add_aclegressrule"],
+            ),
+            PluginMenuButton(
+                link="plugins:netbox_acls:aclegressrule_import",
+                title="Import",
+                icon_class="mdi mdi-upload",
+                color=ButtonColorChoices.CYAN,
                 permissions=["netbox_acls.add_aclegressrule"],
             ),
         ),

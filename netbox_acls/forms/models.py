@@ -7,8 +7,8 @@ from django import forms
 from django.contrib.contenttypes.models import ContentType
 from django.utils.safestring import mark_safe
 from ipam.models import Prefix
-from netbox.forms import NetBoxModelForm
-from utilities.forms.fields import CommentField, DynamicModelChoiceField
+from netbox.forms import NetBoxModelForm, NetBoxModelImportForm
+from utilities.forms.fields import CommentField, DynamicModelChoiceField, CSVModelChoiceField
 from virtualization.models import (
     Cluster,
     ClusterGroup,
@@ -29,30 +29,19 @@ __all__ = (
     "AccessListForm",
     "ACLInterfaceAssignmentForm",
     "ACLIngressRuleForm",
+    "ACLIngressRuleImportForm",
     "ACLEgressRuleForm",
+    "ACLEgressRuleImportForm",
 )
 
-# Sets a standard mark_safe help_text value to be used by the various classes
-help_text_acl_rule_logic = mark_safe(
-    "<b>*Note:</b> CANNOT be set if action is set to remark.",
-)
-# Sets a standard help_text value to be used by the various classes for acl action
-help_text_acl_action = "Action the rule will take (remark, deny, or allow)."
-# Sets a standard help_text value to be used by the various classes for acl index
-help_text_acl_rule_index = "Determines the order of the rule in the ACL processing. AKA Sequence Number."
-
-# Sets a standard error message for ACL rules with an action of remark, but no remark set.
-error_message_no_remark = "Action is set to remark, you MUST add a remark."
-# Sets a standard error message for ACL rules with an action of remark, but no source_prefix is set.
-error_message_action_remark_source_prefix_set = "Action is set to remark, Source Prefix CANNOT be set."
-# Sets a standard error message for ACL rules with an action not set to remark, but no remark is set.
-error_message_remark_without_action_remark = "CANNOT set remark unless action is set to remark."
-
+# some error messages for the protocol/port validation
+error_message_no_ports = "When TCP or UDP are selected, you must provide port numbers as well."
+error_message_icmp_ports = "When ICMP is selected, you CANNOT provide port numbers."
 
 class AccessListForm(NetBoxModelForm):
     """
     GUI form to add or edit an AccessList.
-    Requires a device, a name, a type, and a default_action.
+    Requires a device, a name and a type.
     """
 
     # Device Role selector
@@ -69,12 +58,10 @@ class AccessListForm(NetBoxModelForm):
             "device_role",
             "name",
             "type",
-            "default_action",
             "comments",
             "tags",
         )
         help_texts = {
-            "default_action": "The default behavior of the ACL.",
             "name": "The name uniqueness per device is case insensitive.",
             "type": mark_safe(
                 "<b>*Note:</b> CANNOT be changed if ACL Rules are assoicated to this Access List.",
@@ -138,7 +125,7 @@ class AccessListForm(NetBoxModelForm):
 class ACLInterfaceAssignmentForm(NetBoxModelForm):
     """
     GUI form to add or edit ACL Host Object assignments
-    Requires an access_list, a name, a type, and a default_action.
+    Requires an access_list, a name, and a type.
     """
 
     device = DynamicModelChoiceField(
@@ -245,7 +232,7 @@ class ACLInterfaceAssignmentForm(NetBoxModelForm):
 class ACLIngressRuleForm(NetBoxModelForm):
     """
     GUI form to add or edit Standard Access List.
-    Requires an access_list, an index, and ACL rule type.
+    Requires an access_list  and ACL rule type.
     See the clean function for logic on other field requirements.
     """
 
@@ -262,16 +249,13 @@ class ACLIngressRuleForm(NetBoxModelForm):
 
     fieldsets = (
         ("Access List Details", ("access_list", "description", "tags")),
-        ("Rule Definition", ("index", "action", "remark", "source_prefix", "destination_ports", "protocol")),
+        ("Rule Definition", ("source_prefix", "destination_ports", "protocol")),
     )
 
     class Meta:
         model = ACLIngressRule
         fields = (
             "access_list",
-            "index",
-            "action",
-            "remark",
             "source_prefix",
             "destination_ports", 
             "protocol",
@@ -279,37 +263,88 @@ class ACLIngressRuleForm(NetBoxModelForm):
             "description",
         )
         help_texts = {
-            "index": help_text_acl_rule_index,
-            "action": help_text_acl_action,
-            "remark": mark_safe(
-                "<b>*Note:</b> CANNOT be set if source prefix OR action is set.",
-            ),
         }
 
     def clean(self):
         """
         Validates form inputs before submitting:
-          - Check if action set to remark, but no remark set.
-          - Check if action set to remark, but source_prefix set.
-          - Check remark set, but action not set to remark.
+          - Check if protocol set to something other than icmp, but no destination ports set.
+          - Check if protocol set to icmp, but ports are set.
         """
         #cleaned_data = super().clean()
         error_message = {}
 
         # No need to check for unique_together since there is no usage of GFK
 
-        if self.cleaned_data.get("action") == "remark":
-            # Check if action set to remark, but no remark set.
-            if not self.cleaned_data.get("remark"):
-                error_message["remark"] = [error_message_no_remark]
-            # Check if action set to remark, but source_prefix set.
-            if self.cleaned_data.get("source_prefix"):
-                error_message["source_prefix"] = [
-                    error_message_action_remark_source_prefix_set,
-                ]
+        if self.cleaned_data.get("protocol") != "icmp":
+            # Check if protocol set to something other than icmp, but no destination ports set.
+            if not self.cleaned_data.get("destination_ports"):
+                error_message["destination_ports"] = [error_message_no_ports]
+
         # Check remark set, but action not set to remark.
-        elif self.cleaned_data.get("remark"):
-            error_message["remark"] = [error_message_remark_without_action_remark]
+        else:
+            # Check if protocol set to icmp, but ports are set.
+            if self.cleaned_data.get("destination_ports"):
+                error_message["destination_ports"] = [error_message_icmp_ports]
+
+        if error_message:
+            raise forms.ValidationError(error_message)
+        return self.cleaned_data
+
+
+class ACLIngressRuleImportForm(NetBoxModelImportForm):
+    """
+    GUI form to add or edit Standard Access List.
+    Requires an access_list  and ACL rule type.
+    See the clean function for logic on other field requirements.
+    """
+
+    access_list = CSVModelChoiceField(
+        queryset=AccessList.objects.all(),
+        to_field_name="name",
+        required=True,
+        help_text="Name of the access list to assign the rule to",
+    )
+
+    fieldsets = (
+        ("Access List Details", ("access_list", "description", "tags")),
+        ("Rule Definition", ("source_prefix", "destination_ports", "protocol")),
+    )
+
+    class Meta:
+        model = ACLIngressRule
+        fields = (
+            "access_list",
+            "source_prefix",
+            "destination_ports", 
+            "protocol",
+            "tags",
+            "description",
+        )
+        help_texts = {
+        }
+
+    def clean(self):
+        """
+        Validates form inputs before submitting:
+          - Check if protocol set to something other than icmp, but no destination ports set.
+          - Check if protocol set to icmp, but ports are set.
+        """
+        #cleaned_data = super().clean()
+        error_message = {}
+
+        # No need to check for unique_together since there is no usage of GFK
+
+        if self.cleaned_data.get("protocol") != "icmp":
+            # Check if protocol set to something other than icmp, but no destination ports set.
+            if not self.cleaned_data.get("destination_ports"):
+                error_message["destination_ports"] = [error_message_no_ports]
+
+        # Check remark set, but action not set to remark.
+        else:
+            # Check if protocol set to icmp, but ports are set.
+            if self.cleaned_data.get("destination_ports"):
+                error_message["destination_ports"] = [error_message_icmp_ports]
 
         if error_message:
             raise forms.ValidationError(error_message)
@@ -339,9 +374,6 @@ class ACLEgressRuleForm(NetBoxModelForm):
         (
             "Rule Definition",
             (
-                "index",
-                "action",
-                "remark",
                 "destination_prefix",
                 "destination_ports",
                 "protocol",
@@ -353,9 +385,6 @@ class ACLEgressRuleForm(NetBoxModelForm):
         model = ACLEgressRule
         fields = (
             "access_list",
-            "index",
-            "action",
-            "remark",
             "destination_prefix",
             "destination_ports",
             "protocol",
@@ -363,52 +392,89 @@ class ACLEgressRuleForm(NetBoxModelForm):
             "description",
         )
         help_texts = {
-            "action": help_text_acl_action,
-            "destination_ports": help_text_acl_rule_logic,
-            "index": help_text_acl_rule_index,
-            "protocol": help_text_acl_rule_logic,
-            "remark": mark_safe(
-                "<b>*Note:</b> CANNOT be set if action is not set to remark.",
-            ),
+
         }
 
     def clean(self):
         """
         Validates form inputs before submitting:
-          - Check if action set to remark, but no remark set.
-          - Check if action set to remark, but destination_prefix set.
-          - Check if action set to remark, but destination_ports set.
-          - Check if action set to remark, but destination_ports set.
-          - Check if action set to remark, but protocol set.
-          - Check remark set, but action not set to remark.
+          - Check if protocol set to something other than icmp, but no destination ports set.
+          - Check if protocol set to icmp, but ports are set.
+        """
+        #cleaned_data = super().clean()
+        error_message = {}
+
+        if self.cleaned_data.get("protocol") != "icmp":
+            # Check if protocol set to something other than icmp, but no destination ports set.
+            if not self.cleaned_data.get("destination_ports"):
+                error_message["destination_ports"] = [error_message_no_ports]
+
+        # Check remark set, but action not set to remark.
+        else:
+            # Check if protocol set to icmp, but ports are set.
+            if self.cleaned_data.get("destination_ports"):
+                error_message["destination_ports"] = [error_message_icmp_ports]
+
+        # No need to check for unique_together since there is no usage of GFK
+
+        if error_message:
+            raise forms.ValidationError(error_message)
+        return self.cleaned_data
+
+
+class ACLEgressRuleImportForm(NetBoxModelImportForm):
+    """
+    GUI form to import Egress rules.
+    Requires an access_list.
+    See the clean function for logic on other field requirements.
+    """
+
+    access_list = CSVModelChoiceField(
+        queryset=AccessList.objects.all(),
+        to_field_name="name",
+        required=True,
+        help_text="Name of the access list to assign the rule to",
+    )
+
+    fieldsets = (
+        ("Access List Details", ("access_list", "description", "tags")),
+        ("Rule Definition", ("destination_prefix", "destination_ports", "protocol")),
+    )
+
+    class Meta:
+        model = ACLEgressRule
+        fields = (
+            "access_list",
+            "destination_prefix",
+            "destination_ports", 
+            "protocol",
+            "tags",
+            "description",
+        )
+        help_texts = {
+        }
+
+    def clean(self):
+        """
+        Validates form inputs before submitting:
+          - Check if protocol set to something other than icmp, but no destination ports set.
+          - Check if protocol set to icmp, but ports are set.
         """
         #cleaned_data = super().clean()
         error_message = {}
 
         # No need to check for unique_together since there is no usage of GFK
 
-        if self.cleaned_data.get("action") == "remark":
-            # Check if action set to remark, but no remark set.
-            if not self.cleaned_data.get("remark"):
-                error_message["remark"] = [error_message_no_remark]
-            # Check if action set to remark, but destination_prefix set.
-            if self.cleaned_data.get("destination_prefix"):
-                error_message["destination_prefix"] = [
-                    "Action is set to remark, Destination Prefix CANNOT be set.",
-                ]
-            # Check if action set to remark, but destination_ports set.
+        if self.cleaned_data.get("protocol") != "icmp":
+            # Check if protocol set to something other than icmp, but no destination ports set.
+            if not self.cleaned_data.get("destination_ports"):
+                error_message["destination_ports"] = [error_message_no_ports]
+
+        # Check remark set, but action not set to remark.
+        else:
+            # Check if protocol set to icmp, but ports are set.
             if self.cleaned_data.get("destination_ports"):
-                error_message["destination_ports"] = [
-                    "Action is set to remark, Destination Ports CANNOT be set.",
-                ]
-            # Check if action set to remark, but protocol set.
-            if self.cleaned_data.get("protocol"):
-                error_message["protocol"] = [
-                    "Action is set to remark, Protocol CANNOT be set.",
-                ]
-        # Check if action not set to remark, but remark set.
-        elif self.cleaned_data.get("remark"):
-            error_message["remark"] = [error_message_remark_without_action_remark]
+                error_message["destination_ports"] = [error_message_icmp_ports]
 
         if error_message:
             raise forms.ValidationError(error_message)
