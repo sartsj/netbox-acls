@@ -8,7 +8,7 @@ from django.db import models
 from django.urls import reverse
 from netbox.models import NetBoxModel
 
-from ..choices import ACLProtocolChoices, ACLRuleActionChoices, ACLAssignmentDirectionChoices
+from ..choices import ACLProtocolChoices, ACLAssignmentDirectionChoices
 from .access_lists import AccessList
 
 __all__ = (
@@ -30,18 +30,9 @@ class ACLRule(NetBoxModel):
         verbose_name="Access List",
         related_name="rules",
     )
-    index = models.PositiveIntegerField()
-    remark = models.CharField(
-        max_length=500,
-        blank=True,
-    )
     description = models.CharField(
         max_length=500,
-        blank=True,
-    )
-    action = models.CharField(
-        choices=ACLRuleActionChoices,
-        max_length=30,
+        #blank=True,
     )
     destination_ports = ArrayField(
         base_field=models.PositiveIntegerField(),
@@ -50,19 +41,16 @@ class ACLRule(NetBoxModel):
         verbose_name="Destination Ports",
     )
     protocol = models.CharField(
-        blank=True,
-        null=True,
+        #blank=True,
+        #null=True,
         choices=ACLProtocolChoices,
         max_length=30,
     )
 
-    clone_fields = ("access_list", "action", "destination_ports", "protocol")
+    clone_fields = ("access_list", "destination_ports", "protocol")
 
     def __str__(self):
-        return f"{self.access_list}: Rule {self.index}"
-
-    def get_action_color(self):
-        return ACLRuleActionChoices.colors.get(self.action)
+        return f"{self.access_list} Rule "
 
     @classmethod
     def get_prerequisite_models(cls):
@@ -77,8 +65,8 @@ class ACLRule(NetBoxModel):
         """
 
         abstract = True
-        ordering = ["access_list", "index", "destination_ports", "protocol"]
-        unique_together = ["access_list", "index", "destination_ports", "protocol"]
+        ordering = ["access_list", "destination_ports", "protocol"]
+        unique_together = ["access_list", "destination_ports", "protocol"]
 
 
 class ACLIngressRule(ACLRule):
@@ -96,8 +84,8 @@ class ACLIngressRule(ACLRule):
     )
     source_prefix = models.CharField(
         max_length=100,
-        blank=True,
-        null=True,
+        #blank=True,
+        #null=True,
     )
 
     def get_absolute_url(self):
@@ -138,8 +126,8 @@ class ACLEgressRule(ACLRule):
     )
     destination_prefix = models.CharField(
         max_length=100,
-        blank=True,
-        null=True,
+        #blank=True,
+        #null=True,
     )
 
 

@@ -28,12 +28,6 @@ __all__ = [
     "ACLEgressRuleSerializer",
 ]
 
-# Sets a standard error message for ACL rules with an action of remark, but no remark set.
-error_message_no_remark = "Action is set to remark, you MUST add a remark."
-# Sets a standard error message for ACL rules with an action of remark, but no source_prefix is set.
-error_message_action_remark_source_prefix_set = "Action is set to remark, Source Prefix CANNOT be set."
-# Sets a standard error message for ACL rules with an action not set to remark, but no remark is set.
-error_message_remark_without_action_remark = "CANNOT set remark unless action is set to remark."
 # Sets a standard error message for ACL rules no associated to an ACL of the same type.
 error_message_acl_type = "Provided parent Access List is not of right type."
 
@@ -67,7 +61,6 @@ class AccessListSerializer(NetBoxModelSerializer):
             "assigned_object_id",
             "assigned_object",
             "type",
-            "default_action",
             "comments",
             "tags",
             "custom_fields",
@@ -196,33 +189,35 @@ class ACLIngressRuleSerializer(NetBoxModelSerializer):
             "url",
             "display",
             "access_list",
-            "index",
-            "action",
             "tags",
             "description",
-            "remark",
             "created",
             "custom_fields",
             "last_updated",
             "source_prefix",
+            "protocol",
         )
 
     def validate(self, data):
         """
         Validate the ACLIngressRule django model's inputs before allowing it to update the instance:
-          - Check if action set to remark, but no remark set.
-          - Check if action set to remark, but source_prefix set.
+          - Check if protocol set to something other than icmp, but no destination ports set.
+          - Check if protocol set to icmp, but ports are set.
         """
         error_message = {}
 
-        # Check if action set to remark, but no remark set.
-        if data.get("action") == "remark" and data.get("remark") is None:
-            error_message["remark"] = [error_message_no_remark]
-        # Check if action set to remark, but source_prefix set.
-        if data.get("source_prefix"):
-            error_message["source_prefix"] = [
-                error_message_action_remark_source_prefix_set,
-            ]
+        # Check if protocol set to something other than icmp, but no destination ports set.
+        if data.get("protocol") != 'icmp':
+            if not data.get("destination_ports"):
+                error_message["destination_ports"] = [
+                    "Protocol is set to TCP or UDP, Destination Ports MUST be set.",
+                ]
+        # Check if protocol set to icmp, but ports are set.
+        else:
+            if data.get("destination_ports"):
+                error_message["destination_ports"] = [
+                    "Protocol is set to ICMP, Destination Ports CANNOT be set.",
+                ]
 
         if error_message:
             raise serializers.ValidationError(error_message)
@@ -251,8 +246,6 @@ class ACLEgressRuleSerializer(NetBoxModelSerializer):
             "url",
             "display",
             "access_list",
-            "index",
-            "action",
             "tags",
             "description",
             "created",
@@ -261,41 +254,28 @@ class ACLEgressRuleSerializer(NetBoxModelSerializer):
             "destination_prefix",
             "destination_ports",
             "protocol",
-            "remark",
         )
 
     def validate(self, data):
         """
         Validate the ACLEgressRule django model's inputs before allowing it to update the instance:
-          - Check if action set to remark, but no remark set.
-          - Check if action set to remark, but source_prefix set.
-          - Check if action set to remark, but source_ports set.
-          - Check if action set to remark, but destination_prefix set.
-          - Check if action set to remark, but destination_ports set.
-          - Check if action set to remark, but protocol set.
-          - Check if action set to remark, but protocol set.
+          - Check if protocol set to something other than icmp, but no destination ports set.
+          - Check if protocol set to icmp, but ports are set.
         """
         error_message = {}
 
-        # Check if action set to remark, but no remark set.
-        if data.get("action") == "remark" and data.get("remark") is None:
-            error_message["remark"] = [error_message_no_remark]
-
-        # Check if action set to remark, but destination_prefix set.
-        if data.get("destination_prefix"):
-            error_message["destination_prefix"] = [
-                "Action is set to remark, Destination Prefix CANNOT be set.",
-            ]
-        # Check if action set to remark, but destination_ports set.
-        if data.get("destination_ports"):
-            error_message["destination_ports"] = [
-                "Action is set to remark, Destination Ports CANNOT be set.",
-            ]
-        # Check if action set to remark, but protocol set.
-        if data.get("protocol"):
-            error_message["protocol"] = [
-                "Action is set to remark, Protocol CANNOT be set.",
-            ]
+        # Check if protocol set to something other than icmp, but no destination ports set.
+        if data.get("protocol") != 'icmp':
+            if not data.get("destination_ports"):
+                error_message["destination_ports"] = [
+                    "Protocol is set to TCP or UDP, Destination Ports MUST be set.",
+                ]
+        # Check if protocol set to icmp, but ports are set.
+        else:
+            if data.get("destination_ports"):
+                error_message["destination_ports"] = [
+                    "Protocol is set to ICMP, Destination Ports CANNOT be set.",
+                ]
 
         if error_message:
             raise serializers.ValidationError(error_message)

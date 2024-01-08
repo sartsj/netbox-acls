@@ -46,7 +46,6 @@ class AccessListFilterSet(NetBoxModelFilterSet):
             "device_role",
             "device_role_id",
             "type",
-            "default_action",
             "comments",
         )
 
@@ -118,7 +117,7 @@ class ACLIngressRuleFilterSet(NetBoxModelFilterSet):
         """
 
         model = ACLIngressRule
-        fields = ("id", "access_list", "index", "action", "source_prefix", "protocol")
+        fields = ("id", "access_list", "source_prefix", "protocol")
 
     def search(self, queryset, name, value):
         """
@@ -138,7 +137,7 @@ class ACLEgressRuleFilterSet(NetBoxModelFilterSet):
         """
 
         model = ACLEgressRule
-        fields = ("id", "access_list", "index", "action", "destination_prefix", "protocol")
+        fields = ("id", "access_list", "destination_prefix", "protocol")
 
     def search(self, queryset, name, value):
         """

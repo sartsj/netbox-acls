@@ -26,10 +26,6 @@
                             <td>{% badge object.get_type_display bg_color=object.get_type_color %}</td>
                         </tr>
                         <tr>
-                            <th scope="row">Default Action</th>
-                            <td>{% badge object.get_default_action_display bg_color=object.get_default_action_color %}</td>
-                        </tr>
-                        <tr>
                             <th scope="row">Rules</th>
                             {% if object.type == 'ingress' %}
                                 <td><a href="{% url 'plugins:netbox_acls:aclingressrule_list' %}?access_list={{ object.pk }}">{{ object.aclingressrules.count|placeholder }}</a></td>

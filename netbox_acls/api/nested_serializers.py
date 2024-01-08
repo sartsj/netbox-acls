@@ -72,7 +72,7 @@ class NestedACLIngressRuleSerializer(WritableNestedSerializer):
         """
 
         model = ACLIngressRule
-        fields = ("id", "url", "display", "index")
+        fields = ("id", "url", "display")
 
 
 class NestedACLEgressRuleSerializer(WritableNestedSerializer):
@@ -90,4 +90,4 @@ class NestedACLEgressRuleSerializer(WritableNestedSerializer):
         """
 
         model = ACLEgressRule
-        fields = ("id", "url", "display", "index")
+        fields = ("id", "url", "display")

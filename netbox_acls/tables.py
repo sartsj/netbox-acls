@@ -45,7 +45,6 @@ class AccessListTable(NetBoxTable):
         linkify=True,
     )
     type = ChoiceFieldColumn()
-    default_action = ChoiceFieldColumn()
     rule_count = tables.Column(
         verbose_name="Rule Count",
     )
@@ -62,9 +61,7 @@ class AccessListTable(NetBoxTable):
             "assigned_object",
             "type",
             "rule_count",
-            "default_action",
             "comments",
-            "actions",
             "tags",
         )
         default_columns = (
@@ -72,7 +69,6 @@ class AccessListTable(NetBoxTable):
             "assigned_object",
             "type",
             "rule_count",
-            "default_action",
             "tags",
         )
 
@@ -128,10 +124,6 @@ class ACLIngressRuleTable(NetBoxTable):
     access_list = tables.Column(
         linkify=True,
     )
-    index = tables.Column(
-        linkify=True,
-    )
-    action = ChoiceFieldColumn()
     tags = columns.TagColumn(
         url_name="plugins:netbox_acls:aclingressrule_list",
     )
@@ -142,21 +134,17 @@ class ACLIngressRuleTable(NetBoxTable):
             "pk",
             "id",
             "access_list",
-            "index",
-            "action",
-            "actions",
-            "remark",
             "tags",
             "description",
             "source_prefix",
+            "protocol",
         )
         default_columns = (
             "access_list",
-            "index",
-            "action",
-            "actions",
-            "remark",
+            "description",
+            "protocol",
             "source_prefix",
+            "destination_ports",
             "tags",
         )
 
@@ -169,10 +157,6 @@ class ACLEgressRuleTable(NetBoxTable):
     access_list = tables.Column(
         linkify=True,
     )
-    index = tables.Column(
-        linkify=True,
-    )
-    action = ChoiceFieldColumn()
     tags = columns.TagColumn(
         url_name="plugins:netbox_acls:aclegressrule_list",
     )
@@ -184,10 +168,6 @@ class ACLEgressRuleTable(NetBoxTable):
             "pk",
             "id",
             "access_list",
-            "index",
-            "action",
-            "actions",
-            "remark",
             "tags",
             "description",
             "destination_prefix",
@@ -196,12 +176,9 @@ class ACLEgressRuleTable(NetBoxTable):
         )
         default_columns = (
             "access_list",
-            "index",
-            "action",
-            "actions",
-            "remark",
-            "tags",
+            "description",
+            "protocol",
             "destination_prefix",
             "destination_ports",
-            "protocol",
+            "tags",
         )

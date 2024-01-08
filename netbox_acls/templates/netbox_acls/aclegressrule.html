@@ -18,10 +18,6 @@
               <th scope="row">Description</th>
               <td>{{ object.description|placeholder }}</td>
             </tr>
-            <tr>
-              <th scope="row">Index</th>
-              <td>{{ object.index }}</td>
-            </tr>
           </table>
         </div>
       </div>
@@ -34,10 +30,6 @@
         <div class="card-body">
           <table class="table table-hover attr-table">
             <caption>Details</caption>
-            <tr>
-              <th scope="row">Remark</th>
-              <td>{{ object.get_remark_display|placeholder }}</td>
-            </tr>
             <tr>
               <th scope="row">Protocol</th>
               <td>{{ object.get_protocol_display|placeholder }}</td>
@@ -55,10 +47,6 @@
             <tr>
               <th scope="row">Destination Ports</th>
               <td>{{ object.destination_ports|join:", "|placeholder }}</td>
-            </tr>
-            <tr>
-              <th scope="row">Action</th>
-              <td>{% badge object.get_action_display bg_color=object.get_action_color %}</td>
             </tr>
           </table>
         </div>

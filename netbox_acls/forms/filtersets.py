@@ -15,10 +15,8 @@ from utilities.forms.utils import add_blank_choice
 from virtualization.models import VirtualMachine, VMInterface
 
 from ..choices import (
-    ACLActionChoices,
     ACLAssignmentDirectionChoices,
     ACLProtocolChoices,
-    ACLRuleActionChoices,
 )
 from ..models import (
     AccessList,
@@ -76,11 +74,6 @@ class AccessListFilterForm(NetBoxModelFilterSetForm):
         choices=add_blank_choice(ACLAssignmentDirectionChoices),
         required=False,
     )
-    default_action = forms.ChoiceField(
-        choices=add_blank_choice(ACLActionChoices),
-        required=False,
-        label="Default Action",
-    )
     tag = TagFilterField(model)
 
     fieldsets = (
@@ -96,7 +89,7 @@ class AccessListFilterForm(NetBoxModelFilterSetForm):
                 "virtual_machine",
             ),
         ),
-        ("ACL Details", ("type", "default_action")),
+        ("ACL Details", ("type",)),
     )
 
 
@@ -161,7 +154,7 @@ class ACLInterfaceAssignmentFilterForm(NetBoxModelFilterSetForm):
     # fieldsets = (
     #    (None, ('q', 'tag')),
     #    ('Host Details', ('region', 'site_group', 'site', 'device')),
-    #    ('ACL Details', ('type', 'default_action')),
+    #    ('ACL Details', ('type')),
     # )
 
 
@@ -181,13 +174,9 @@ class ACLIngressRuleFilterForm(NetBoxModelFilterSetForm):
         required=False,
         label="Source Prefix",
     )
-    action = forms.ChoiceField(
-        choices=add_blank_choice(ACLRuleActionChoices),
-        required=False,
-    )
     fieldsets = (
         (None, ("q", "tag")),
-        ("Rule Details", ("access_list", "action", "source_prefix")),
+        ("Rule Details", ("access_list", "source_prefix")),
     )
 
 
@@ -197,16 +186,9 @@ class ACLEgressRuleFilterForm(NetBoxModelFilterSetForm):
     """
 
     model = ACLEgressRule
-    index = forms.IntegerField(
-        required=False,
-    )
     tag = TagFilterField(model)
     access_list = DynamicModelMultipleChoiceField(
         queryset=AccessList.objects.all(),
-        required=False,
-    )
-    action = forms.ChoiceField(
-        choices=add_blank_choice(ACLRuleActionChoices),
         required=False,
     )
     source_prefix = DynamicModelMultipleChoiceField(
@@ -230,7 +212,6 @@ class ACLEgressRuleFilterForm(NetBoxModelFilterSetForm):
             "Rule Details",
             (
                 "access_list",
-                "action",
                 "destination_prefix",
                 "protocol",
             ),

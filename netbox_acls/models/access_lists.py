@@ -11,7 +11,7 @@ from django.urls import reverse
 from netbox.models import NetBoxModel
 from virtualization.models import VirtualMachine, VMInterface
 
-from ..choices import ACLActionChoices, ACLAssignmentDirectionChoices
+from ..choices import ACLAssignmentDirectionChoices
 from ..constants import ACL_HOST_ASSIGNMENT_MODELS, ACL_INTERFACE_ASSIGNMENT_MODELS
 
 __all__ = (
@@ -49,19 +49,12 @@ class AccessList(NetBoxModel):
         max_length=30,
         choices=ACLAssignmentDirectionChoices,
     )
-    default_action = models.CharField(
-        default=ACLActionChoices.ACTION_DENY,
-        max_length=30,
-        choices=ACLActionChoices,
-        verbose_name="Default Action",
-    )
     comments = models.TextField(
         blank=True,
     )
 
     clone_fields = (
         "type",
-        "default_action",
     )
 
     class Meta:
@@ -79,9 +72,6 @@ class AccessList(NetBoxModel):
         it conveniently returns the absolute URL for any particular object.
         """
         return reverse("plugins:netbox_acls:accesslist", args=[self.pk])
-
-    def get_default_action_color(self):
-        return ACLActionChoices.colors.get(self.default_action)
 
     def get_type_color(self):
         return ACLAssignmentDirectionChoices.colors.get(self.type)
